@@ -32,7 +32,7 @@ const CLASS_LABEL = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   AUDIO — Web Audio API beep
+   AUDIO, Web Audio API beep
    Pola beep:
      no_helmet          → 1× beep oranye
      no_vest            → 2× beep oranye
@@ -86,7 +86,7 @@ function playBeep(violations = []) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HELPER — pesan error kamera
+   HELPER, pesan error kamera
 ═══════════════════════════════════════════════════════════ */
 function getCamError(err) {
   switch (err.name) {
@@ -106,7 +106,7 @@ function getCamError(err) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   BBOX OVERLAY — div overlay posisi berdasar bbox_norm
+   BBOX OVERLAY, div overlay posisi berdasar bbox_norm
 ═══════════════════════════════════════════════════════════ */
 function BboxOverlay({ detections, videoRef }) {
   const [rect, setRect] = useState({ offX:0, offY:0, w:1, h:1 });
@@ -197,7 +197,7 @@ function BboxOverlay({ detections, videoRef }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FULLSCREEN — data nyata, tanpa dummy
+   FULLSCREEN, data nyata, tanpa dummy
 ═══════════════════════════════════════════════════════════ */
 function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, camIdx, onSwitchCamera }) {
   const fsRef      = useRef(null);
@@ -231,18 +231,18 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
         <div className="fs-live">
           <div className="fs-dot" />
           <div>
-            <div className="fs-id">LIVE — {activeCamLabel}</div>
+            <div className="fs-id">LIVE - {activeCamLabel}</div>
             <div className="fs-loc">
               {stats?.status === "violation"
                 ? `⚠ ${violations} PELANGGARAN APD TERDETEKSI`
                 : stats?.status === "complete"
-                  ? `✓ ${total} PEKERJA — APD LENGKAP`
+                  ? `✓ ${total} PEKERJA, APD LENGKAP`
                   : "Menunggu deteksi..."}
             </div>
           </div>
         </div>
 
-        {/* CAMERA SWITCHER — dropdown */}
+        {/* CAMERA SWITCHER, dropdown */}
         <div className="fs-center">
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <Icon.Camera s={13} c="rgba(255,255,255,.45)"/>
@@ -310,7 +310,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
               style={{ width:"100%", height:"100%", objectFit:"cover", filter:"brightness(.45) saturate(.8)" }} alt="stream"/>
         }
 
-        {/* Bbox overlay — hanya tampil saat showInfo aktif */}
+        {/* Bbox overlay, hanya tampil saat showInfo aktif */}
         {showInfo && (
           <BboxOverlay detections={detections} videoRef={fsRef}/>
         )}
@@ -325,7 +325,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
             backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.2)",
             whiteSpace:"nowrap",
           }}>
-            ⚠ PELANGGARAN APD — {detections?.filter(d=>d.label!=="complete_vest_helmet").map(d=>CLASS_LABEL[d.label]).join(", ")}
+            ⚠ PELANGGARAN APD, {detections?.filter(d=>d.label!=="complete_vest_helmet").map(d=>CLASS_LABEL[d.label]).join(", ")}
           </div>
         )}
 
@@ -344,7 +344,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
         <div className="fs-scan"/>
       </div>
 
-      {/* FOOTER STATS — disembunyikan jika showInfo off */}
+      {/* FOOTER STATS, disembunyikan jika showInfo off */}
       {showInfo && (
       <div className="fs-foot">
         <div className="fs-stats">
@@ -796,7 +796,7 @@ export default function DetectionPage({ setPage }) {
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: vc, audio: false });
 
-      // Set stream dulu, camOn jadi true — WebSocket useEffect akan trigger
+      // Set stream dulu, camOn jadi true, WebSocket useEffect akan trigger
       setMediaStream(stream);
       setCamOn(true);
       getAudioCtx();
@@ -879,7 +879,7 @@ export default function DetectionPage({ setPage }) {
                     : wsStatus === "error" ? "err"
                     : "off";
 
-  const wsPillText = wsStatus === "on"         ? "WebSocket Terhubung — Mengirim frame ke model"
+  const wsPillText = wsStatus === "on"         ? "WebSocket Terhubung, Mengirim frame ke model"
                    : wsStatus === "connecting"  ? "Menghubungkan ke backend..."
                    : wsStatus === "error"       ? "Gagal terhubung ke backend (pastikan server berjalan)"
                    : "WebSocket Tidak Aktif";

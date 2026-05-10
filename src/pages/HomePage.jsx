@@ -21,7 +21,7 @@ export default function HomePage({ setPage }) {
             <h1>Deteksi APD <em>Otomatis</em><br/>Berbasis AI</h1>
             <p className="hero-sub">
               Monitor pemakaian helm dan rompi keselamatan pekerja secara langsung
-              dari kamera menggunakan model YOLOv8 ONNX — ringan, cepat,
+              dari kamera menggunakan model YOLOv8 ONNX, ringan, cepat,
               dan berjalan sepenuhnya di server lokal Anda.
             </p>
             <div className="hero-actions">
@@ -34,7 +34,7 @@ export default function HomePage({ setPage }) {
             </div>
           </div>
 
-          {/* Kanan — stat cards */}
+          {/* Kanan, stat cards */}
           <div className="hero-right">
             <div className="hero-stats">
               {[
@@ -81,7 +81,7 @@ export default function HomePage({ setPage }) {
             <h2 className="sec-title">Apa itu APD?</h2>
             <p className="sec-sub" style={{ maxWidth: 500 }}>
               Alat Pelindung Diri (APD) adalah perlengkapan wajib di area kerja
-              berbahaya — bukan sekadar aturan, tapi garis pertahanan terakhir
+              berbahaya, bukan sekadar aturan, tapi garis pertahanan terakhir
               sebelum kecelakaan terjadi.
             </p>
           </div>
@@ -97,7 +97,7 @@ export default function HomePage({ setPage }) {
               <div className="about-caption">
                 Berdasarkan data Kemnaker, mayoritas kecelakaan kerja di sektor
                 konstruksi dan industri terjadi akibat APD yang tidak digunakan
-                secara konsisten — bukan karena tidak tersedia.
+                secara konsisten, bukan karena tidak tersedia.
               </div>
             </div>
 
@@ -105,7 +105,7 @@ export default function HomePage({ setPage }) {
               <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, marginBottom: 22 }}>
                 Sistem ini hadir untuk menutup celah tersebut: mendeteksi
                 secara visual apakah setiap pekerja sudah mengenakan APD yang
-                sesuai — secara otomatis, konsisten, dan tanpa intervensi manual.
+                sesuai, secara otomatis, konsisten, dan tanpa intervensi manual.
               </p>
               <div className="ppe-items">
                 {[
@@ -125,7 +125,7 @@ export default function HomePage({ setPage }) {
                     icon: <Icon.BookOpen s={18} c="#9333ea" />,
                     bg: "rgba(147,51,234,.08)",
                     title: "Dasar Hukum",
-                    desc: "Diwajibkan UU No. 1/1970 Keselamatan Kerja dan Permenaker No. 8/2010 — pelanggaran dapat berujung sanksi.",
+                    desc: "Diwajibkan UU No. 1/1970 Keselamatan Kerja dan Permenaker No. 8/2010, pelanggaran dapat berujung sanksi.",
                   },
                 ].map((item) => (
                   <div key={item.title} className="ppe-item">
@@ -149,7 +149,7 @@ export default function HomePage({ setPage }) {
             <div className="sec-tag"><Icon.Settings s={12} c={T.accent} /> Cara Kerja</div>
             <h2 className="sec-title">Dari Kamera ke Hasil Deteksi</h2>
             <p className="sec-sub" style={{ maxWidth: 480, margin: "10px auto 0" }}>
-              Tiga tahap yang terjadi dalam hitungan milidetik — sepenuhnya otomatis
+              Tiga tahap yang terjadi dalam hitungan milidetik, sepenuhnya otomatis
             </p>
           </div>
           <div className="how-grid">
@@ -186,7 +186,7 @@ export default function HomePage({ setPage }) {
         <div className="cta-inner">
           <h2>Siap Mencoba Sistemnya?</h2>
           <p>
-            Aktifkan kamera atau upload foto area kerja —
+            Aktifkan kamera atau upload foto area kerja,
             hasil deteksi APD langsung terlihat tanpa konfigurasi tambahan.
           </p>
           <div className="cta-btns">
