@@ -147,12 +147,11 @@ function BboxOverlay({ detections }) {
 /* ═══════════════════════════════════════════════════════════
    FULLSCREEN — data nyata, tanpa dummy
 ═══════════════════════════════════════════════════════════ */
-function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
-  const fsRef  = useRef(null);
-  const [bars, setBars] = useState(Array(10).fill(20));
-  const [sel,  setSel]  = useState("STREAM 01 (KAMERA)");
+function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, camIdx, onSwitchCamera }) {
+  const fsRef      = useRef(null);
+  const [bars,     setBars]     = useState(Array(10).fill(20));
+  const [showInfo, setShowInfo] = useState(true);
 
-  // Assign stream ke video fullscreen
   useEffect(() => {
     if (fsRef.current && stream) {
       fsRef.current.srcObject = stream;
@@ -160,7 +159,6 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
     }
   }, [stream]);
 
-  // Animasi bar chart dari avg_confidence
   useEffect(() => {
     const base = stats?.avg_confidence ? stats.avg_confidence * 100 : 50;
     setBars(prev => prev.map(() => Math.max(10, Math.min(100, base + (Math.random() * 20 - 10)))));
@@ -172,6 +170,8 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
   const avgConf    = stats?.avg_confidence  ? (stats.avg_confidence * 100).toFixed(1) : "—";
   const ms         = inferenceMs ?? "—";
 
+  const activeCamLabel = cameras?.[camIdx]?.label?.replace(/\s*\(.*?\)/g, "").trim() || `Kamera ${(camIdx ?? 0) + 1}`;
+
   return (
     <div className="fs-overlay">
       {/* TOP BAR */}
@@ -179,7 +179,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
         <div className="fs-live">
           <div className="fs-dot" />
           <div>
-            <div className="fs-id">LIVE {sel}</div>
+            <div className="fs-id">LIVE — {activeCamLabel}</div>
             <div className="fs-loc">
               {stats?.status === "violation"
                 ? `⚠ ${violations} PELANGGARAN APD TERDETEKSI`
@@ -189,15 +189,63 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
             </div>
           </div>
         </div>
+
+        {/* CAMERA SWITCHER — dropdown */}
         <div className="fs-center">
-          <select className="fs-sel" value={sel} onChange={e => setSel(e.target.value)}>
-            {["STREAM 01 (KAMERA)", "STREAM 02 (AREA A)", "STREAM 03 (AREA B)", "STREAM 04 (PINTU MASUK)"].map(s => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <Icon.Camera s={13} c="rgba(255,255,255,.45)"/>
+            <select
+              value={camIdx}
+              onChange={e => onSwitchCamera(Number(e.target.value))}
+              style={{
+                background:  "rgba(255,255,255,.07)",
+                border:      "1px solid rgba(255,255,255,.18)",
+                borderRadius: 8,
+                color:       "#fff",
+                fontSize:    12,
+                fontWeight:  600,
+                padding:     "5px 28px 5px 10px",
+                cursor:      "pointer",
+                outline:     "none",
+                appearance:  "none",
+                WebkitAppearance: "none",
+                backgroundImage:  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.4)'/%3E%3C/svg%3E")`,
+                backgroundRepeat:   "no-repeat",
+                backgroundPosition: "right 8px center",
+                minWidth: 160,
+                maxWidth: 220,
+              }}
+            >
+              {cameras && cameras.length > 0
+                ? cameras.map((cam, i) => (
+                    <option key={cam.deviceId || i} value={i} style={{ background:"#0c1f35" }}>
+                      {cam.label?.replace(/\s*\(.*?\)/g,"").trim() || `Kamera ${i+1}`}
+                    </option>
+                  ))
+                : <option value={0} style={{ background:"#0c1f35" }}>Kamera Aktif</option>
+              }
+            </select>
+            {/* Live dot di sebelah kanan dropdown */}
+            <div style={{
+              width:7, height:7, borderRadius:"50%",
+              background:"#4ade80", boxShadow:"0 0 7px #4ade80",
+              flexShrink:0,
+            }}/>
+          </div>
         </div>
+
         <div style={{ display:"flex", gap:8 }}>
-          <div className="fs-ibtn"><Icon.Eye s={14} c="#fff"/></div>
+          <div
+            className="fs-ibtn"
+            onClick={() => setShowInfo(v => !v)}
+            title={showInfo ? "Sembunyikan overlay info" : "Tampilkan overlay info"}
+            style={{
+              background: showInfo ? "rgba(74,222,128,.2)" : "rgba(255,255,255,.07)",
+              border: showInfo ? "1px solid rgba(74,222,128,.4)" : "1px solid rgba(255,255,255,.12)",
+            }}
+          >
+            <Icon.Eye s={14} c={showInfo ? "#4ade80" : "#fff"}/>
+          </div>
           <div className="fs-ibtn" onClick={onClose}><Icon.X s={14} c="#fff"/></div>
         </div>
       </div>
@@ -210,30 +258,45 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
               style={{ width:"100%", height:"100%", objectFit:"cover", filter:"brightness(.45) saturate(.8)" }} alt="stream"/>
         }
 
-        {/* Bbox overlay real detections */}
-        <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
-          <BboxOverlay detections={detections}/>
-        </div>
+        {/* Bbox overlay — hanya tampil saat showInfo aktif */}
+        {showInfo && (
+          <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
+            <BboxOverlay detections={detections}/>
+          </div>
+        )}
 
-        {/* Alert banner */}
-        {stats?.status === "violation" && (
+        {/* Alert banner pelanggaran */}
+        {showInfo && stats?.status === "violation" && (
           <div style={{
             position:"absolute", bottom:20, left:"50%", transform:"translateX(-50%)",
             background:"rgba(220,38,38,.85)", color:"#fff",
             padding:"10px 24px", borderRadius:999,
             fontSize:13, fontWeight:700, letterSpacing:".5px",
             backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.2)",
+            whiteSpace:"nowrap",
           }}>
             ⚠ PELANGGARAN APD — {detections?.filter(d=>d.label!=="complete_vest_helmet").map(d=>CLASS_LABEL[d.label]).join(", ")}
+          </div>
+        )}
+
+        {/* Badge "Info Hidden" saat showInfo off */}
+        {!showInfo && (
+          <div style={{
+            position:"absolute", top:12, right:12,
+            background:"rgba(0,0,0,.55)", color:"rgba(255,255,255,.5)",
+            padding:"4px 12px", borderRadius:99, fontSize:11,
+            backdropFilter:"blur(6px)", border:"1px solid rgba(255,255,255,.1)",
+          }}>
+            Overlay disembunyikan
           </div>
         )}
 
         <div className="fs-scan"/>
       </div>
 
-      {/* FOOTER STATS — semua dari data nyata */}
+      {/* FOOTER STATS — disembunyikan jika showInfo off */}
+      {showInfo && (
       <div className="fs-foot">
-        {/* Kiri: jumlah */}
         <div className="fs-stats">
           <div className="fs-big">
             <div className="fs-lbl">Total Terdeteksi</div>
@@ -252,7 +315,6 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
           </div>
         </div>
 
-        {/* Tengah: bar chart dari confidence */}
         <div className="fs-bars">
           {bars.map((h, i) => (
             <div key={i} className="fs-bar" style={{
@@ -262,7 +324,6 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
           ))}
         </div>
 
-        {/* Kanan: akurasi + teknis */}
         <div className="fs-right">
           <div className="fs-tech">
             <div className="fs-tech-item">
@@ -289,114 +350,213 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs }) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
 
+
 /* ═══════════════════════════════════════════════════════════
-   RESULT CARDS — tampil hasil deteksi
+   RESULT CARDS
 ═══════════════════════════════════════════════════════════ */
 function ResultCards({ stats, detections }) {
   const isViolation   = stats.status === "violation";
   const isComplete    = stats.status === "complete";
   const isNoDetection = stats.status === "no_detection";
 
+  const conf = stats.avg_confidence ? (stats.avg_confidence * 100) : 0;
+  const confPct = conf.toFixed(1);
+
+  // Warna tema berdasar status
+  const theme = isViolation
+    ? { bg: "rgba(220,38,38,.06)",  border: "rgba(220,38,38,.18)",  accent: "#ef4444", glow: "rgba(220,38,38,.25)" }
+    : isComplete
+    ? { bg: "rgba(22,163,74,.06)",  border: "rgba(22,163,74,.18)",  accent: "#22c55e", glow: "rgba(22,163,74,.25)" }
+    : { bg: "rgba(100,116,139,.04)", border: "rgba(100,116,139,.12)", accent: "#64748b", glow: "transparent" };
+
   return (
-    <>
-      {/* Status alert */}
-      <div className={`r-alert ${isViolation ? "warn" : isComplete ? "ok" : "idle"}`}>
-        <div className="r-alert-ic">
-          {isViolation   ? <Icon.AlertTriangle s={16} c={T.red}/>
-         : isComplete    ? <Icon.Check s={16} c={T.green}/>
-         : <Icon.Loader  s={16} c={T.muted}/>}
+    <div style={{ marginTop:18, display:"flex", flexDirection:"column", gap:12 }}>
+
+      {/* ── STATUS BANNER ── */}
+      <div style={{
+        display:"flex", alignItems:"center", gap:14,
+        padding:"14px 18px",
+        background: theme.bg,
+        border: `1px solid ${theme.border}`,
+        borderRadius: 14,
+        boxShadow: `0 0 20px ${theme.glow}`,
+        position:"relative", overflow:"hidden",
+      }}>
+        {/* Glow bar kiri */}
+        <div style={{
+          position:"absolute", left:0, top:0, bottom:0, width:4,
+          background: theme.accent,
+          borderRadius:"14px 0 0 14px",
+        }}/>
+
+        {/* Ikon status */}
+        <div style={{
+          width:40, height:40, borderRadius:"50%",
+          background:`${theme.accent}18`,
+          border:`1.5px solid ${theme.accent}40`,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          flexShrink:0, marginLeft:6,
+        }}>
+          {isViolation
+            ? <Icon.AlertTriangle s={20} c={theme.accent}/>
+            : isComplete
+            ? <Icon.Check s={20} c={theme.accent}/>
+            : <Icon.Loader s={20} c={theme.accent}/>}
         </div>
-        <div>
-          <div className="r-title">
-            {isViolation   ? `⚠ Pelanggaran APD Terdeteksi (${stats.violation_count} orang)`
-           : isComplete    ? `✓ APD Lengkap — ${stats.total_detected} orang terdeteksi`
-           : "Tidak ada orang terdeteksi"}
+
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:14, fontWeight:800, color: isNoDetection ? "#64748b" : theme.accent, letterSpacing:".2px" }}>
+            {isViolation   ? `Pelanggaran APD Terdeteksi`
+           : isComplete    ? `Semua APD Lengkap`
+           : "Tidak Ada Orang Terdeteksi"}
           </div>
-          <div className="r-sub">
+          <div style={{ fontSize:12, color:"#64748b", marginTop:3 }}>
             {isNoDetection
-              ? "Arahkan kamera ke area kerja"
-              : `${stats.complete_count} lengkap · ${stats.violation_count} pelanggaran · avg ${(stats.avg_confidence*100).toFixed(1)}%`}
+              ? "Arahkan kamera ke area kerja yang aktif"
+              : `${stats.total_detected} orang · ${stats.complete_count} lengkap · ${stats.violation_count} pelanggaran`}
           </div>
         </div>
+
+        {/* Confidence pill */}
+        {!isNoDetection && (
+          <div style={{
+            display:"flex", flexDirection:"column", alignItems:"center",
+            padding:"6px 14px",
+            background:`${theme.accent}12`,
+            border:`1px solid ${theme.accent}30`,
+            borderRadius:10,
+            flexShrink:0,
+          }}>
+            <div style={{ fontSize:20, fontWeight:800, color:theme.accent, lineHeight:1 }}>{confPct}%</div>
+            <div style={{ fontSize:9, color:"#64748b", marginTop:2, letterSpacing:".5px" }}>AKURASI</div>
+          </div>
+        )}
       </div>
 
-      {/* Stat boxes */}
-      <div className="stat-row">
-        <div className="stat-box">
-          <div className="stat-ic" style={{ background:"rgba(45,125,210,.1)" }}>
-            <Icon.Activity s={17} c={T.accent}/>
+      {/* ── STAT TILES ── */}
+      {!isNoDetection && (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+          {/* Total */}
+          <div style={{
+            padding:"12px 14px", borderRadius:12,
+            background:"rgba(45,125,210,.07)", border:"1px solid rgba(45,125,210,.15)",
+            display:"flex", flexDirection:"column", gap:4,
+          }}>
+            <div style={{ fontSize:10, color:"#64748b", fontWeight:600, letterSpacing:".5px", textTransform:"uppercase" }}>Terdeteksi</div>
+            <div style={{ fontSize:28, fontWeight:800, color:"#e2e8f0", lineHeight:1 }}>{stats.total_detected}</div>
+            <div style={{ fontSize:11, color:"#475569" }}>orang</div>
           </div>
-          <div className="stat-num">{stats.total_detected}</div>
-          <div className="stat-lbl">Terdeteksi</div>
-        </div>
 
-        <div className="stat-box">
-          <div className="stat-ic" style={{ background:"rgba(22,163,74,.1)" }}>
-            <Icon.Check s={17} c={T.green}/>
+          {/* Lengkap */}
+          <div style={{
+            padding:"12px 14px", borderRadius:12,
+            background:"rgba(22,163,74,.07)", border:"1px solid rgba(22,163,74,.15)",
+            display:"flex", flexDirection:"column", gap:4,
+          }}>
+            <div style={{ fontSize:10, color:"#64748b", fontWeight:600, letterSpacing:".5px", textTransform:"uppercase" }}>APD Lengkap</div>
+            <div style={{ fontSize:28, fontWeight:800, color:"#22c55e", lineHeight:1 }}>{stats.complete_count}</div>
+            <div style={{ fontSize:11, color:"#475569" }}>orang aman</div>
           </div>
-          <div className="stat-num" style={{ color: T.green }}>{stats.complete_count}</div>
-          <div className="stat-lbl">APD Lengkap</div>
-        </div>
 
-        <div className="stat-box">
-          <div className="stat-ic" style={{ background:"rgba(220,38,38,.08)" }}>
-            <Icon.AlertTriangle s={17} c={T.red}/>
+          {/* Pelanggaran */}
+          <div style={{
+            padding:"12px 14px", borderRadius:12,
+            background: stats.violation_count > 0 ? "rgba(220,38,38,.07)" : "rgba(100,116,139,.05)",
+            border: stats.violation_count > 0 ? "1px solid rgba(220,38,38,.2)" : "1px solid rgba(100,116,139,.12)",
+            display:"flex", flexDirection:"column", gap:4,
+          }}>
+            <div style={{ fontSize:10, color:"#64748b", fontWeight:600, letterSpacing:".5px", textTransform:"uppercase" }}>Pelanggaran</div>
+            <div style={{ fontSize:28, fontWeight:800, color: stats.violation_count > 0 ? "#ef4444" : "#334155", lineHeight:1 }}>
+              {stats.violation_count}
+            </div>
+            <div style={{ fontSize:11, color:"#475569" }}>orang</div>
           </div>
-          <div className="stat-num" style={{ color: stats.violation_count > 0 ? T.red : T.navy }}>
-            {stats.violation_count}
-          </div>
-          <div className="stat-lbl">Pelanggaran</div>
         </div>
+      )}
 
-        <div className="stat-box">
-          <div className="stat-ic" style={{ background:"rgba(8,145,178,.1)" }}>
-            <Icon.Activity s={17} c={T.teal}/>
+      {/* ── CONFIDENCE BAR ── */}
+      {!isNoDetection && (
+        <div style={{ padding:"12px 16px", borderRadius:12, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.07)" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+            <span style={{ fontSize:11, color:"#64748b", fontWeight:600 }}>Rata-rata Confidence Model</span>
+            <span style={{ fontSize:13, fontWeight:800, color: conf >= 70 ? "#22c55e" : conf >= 50 ? "#f97316" : "#ef4444" }}>
+              {confPct}%
+            </span>
           </div>
-          <div className="stat-num" style={{ fontSize:22 }}>
-            {stats.avg_confidence ? `${(stats.avg_confidence*100).toFixed(0)}%` : "—"}
+          <div style={{ height:6, borderRadius:99, background:"rgba(255,255,255,.07)", overflow:"hidden" }}>
+            <div style={{
+              height:"100%", borderRadius:99,
+              width:`${Math.min(conf,100)}%`,
+              background: conf >= 70 ? "linear-gradient(90deg,#16a34a,#22c55e)"
+                        : conf >= 50 ? "linear-gradient(90deg,#ea580c,#f97316)"
+                        : "linear-gradient(90deg,#b91c1c,#ef4444)",
+              transition:"width .5s ease",
+            }}/>
           </div>
-          <div className="stat-lbl">Avg Confidence</div>
         </div>
-      </div>
+      )}
 
-      {/* Detail per orang yang terdeteksi */}
+      {/* ── LIST DETEKSI PER ORANG ── */}
       {detections.length > 0 && (
-        <div style={{ marginTop:14, display:"flex", flexDirection:"column", gap:8 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"#475569", letterSpacing:".6px", textTransform:"uppercase", paddingLeft:2 }}>
+            Detail Deteksi
+          </div>
           {detections.map((d, i) => {
-            const color = CLASS_COLOR[d.label] || "#64748b";
-            const isVio = d.label !== "complete_vest_helmet";
+            const color  = CLASS_COLOR[d.label] || "#64748b";
+            const isVio  = d.label !== "complete_vest_helmet";
+            const conf_d = (d.confidence * 100);
             return (
               <div key={i} style={{
                 display:"flex", alignItems:"center", gap:12,
-                background: isVio ? "rgba(220,38,38,.05)" : "rgba(22,163,74,.05)",
-                border: `1px solid ${color}30`,
-                borderLeft: `3px solid ${color}`,
-                borderRadius:10, padding:"10px 14px",
+                padding:"10px 14px",
+                background: isVio ? "rgba(220,38,38,.04)" : "rgba(22,163,74,.04)",
+                border:`1px solid ${color}22`,
+                borderRadius:11,
+                transition:"background .2s",
               }}>
+                {/* Nomor */}
                 <div style={{
-                  width:10, height:10, borderRadius:"50%", background:color, flexShrink:0,
-                }}/>
-                <div style={{ flex:1 }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:"#0c1f35" }}>
-                    Orang {i+1} — {CLASS_LABEL[d.label] || d.label}
-                  </span>
-                </div>
-                <div style={{
-                  fontSize:12, fontWeight:700, color,
-                  background:`${color}18`, padding:"2px 10px", borderRadius:99,
+                  width:26, height:26, borderRadius:"50%", flexShrink:0,
+                  background:`${color}18`, border:`1.5px solid ${color}40`,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:11, fontWeight:800, color,
                 }}>
-                  {(d.confidence*100).toFixed(1)}%
+                  {i+1}
+                </div>
+
+                {/* Label */}
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#cbd5e1" }}>
+                    {CLASS_LABEL[d.label] || d.label}
+                  </div>
+                  <div style={{ fontSize:10, color:"#475569", marginTop:1 }}>
+                    {isVio ? "⚠ Perlu tindakan" : "✓ APD sesuai standar"}
+                  </div>
+                </div>
+
+                {/* Mini confidence bar + nilai */}
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4, minWidth:60 }}>
+                  <span style={{ fontSize:13, fontWeight:800, color }}>{conf_d.toFixed(1)}%</span>
+                  <div style={{ width:56, height:4, borderRadius:99, background:"rgba(255,255,255,.08)" }}>
+                    <div style={{
+                      height:"100%", borderRadius:99,
+                      width:`${Math.min(conf_d,100)}%`,
+                      background: color,
+                    }}/>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -655,6 +815,23 @@ export default function DetectionPage({ setPage }) {
           detections={detections}
           stats={liveStats}
           inferenceMs={inferenceMs}
+          cameras={cameras}
+          camIdx={camIdx}
+          onSwitchCamera={async (i) => {
+            if (i === camIdx) return;
+            // Ganti kamera: stop stream lama, buka stream baru
+            mediaStream?.getTracks().forEach(t => t.stop());
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({
+                video: cameras[i] ? { deviceId: { exact: cameras[i].deviceId } } : true,
+                audio: false,
+              });
+              setMediaStream(stream);
+              setCamIdx(i);
+            } catch (err) {
+              setCamError(getCamError(err));
+            }
+          }}
         />
       )}
 
