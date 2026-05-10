@@ -39,7 +39,7 @@ _session: ort.InferenceSession | None = None
 def load_model() -> None:
     global _session
     try:
-        providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        providers = ["CPUExecutionProvider"]
         _session = ort.InferenceSession(settings.MODEL_PATH, providers=providers)
         used = _session.get_providers()[0]
         logger.info(f"Model ONNX dimuat: {settings.MODEL_PATH} | Provider: {used}")
