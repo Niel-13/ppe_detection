@@ -1,0 +1,458 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Icon } from "../components/icons/Icons";
+import Footer from "../components/Footer";
+import { T } from "../constants/tokens";
+
+/* ─────────────────────────────────────────
+   DATA: bounding box dummy untuk fullscreen
+───────────────────────────────────────── */
+const BBOXES = [
+  { id: 1, label: "HELMET",      conf: 98.2, x: 31, y: 18, w: 18, h: 28, color: "#f0b429", dash: false },
+  { id: 2, label: "SAFETY VEST", conf: 96.5, x: 26, y: 36, w: 25, h: 34, color: "#67e8f9", dash: false },
+  { id: 3, label: "HELMET",      conf: 94.1, x: 61, y: 36, w: 16, h: 26, color: "#f0b429", dash: true  },
+  { id: 4, label: "SAFETY VEST", conf: 97.9, x: 57, y: 50, w: 22, h: 30, color: "#67e8f9", dash: true  },
+];
+
+/* ─────────────────────────────────────────
+   SUB-COMPONENT: Fullscreen Overlay
+───────────────────────────────────────── */
+function FullScreen({ onClose, videoRef }) {
+  const [bars,   setBars]   = useState([30, 48, 36, 55, 42, 65, 50, 44, 70, 54]);
+  const [acc,    setAcc]    = useState(97.4);
+  const [ms,     setMs]     = useState(14.2);
+  const [stream, setStream] = useState("STREAM 04 (MAIN)");
+
+  // Animasi live data
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setBars((b) => b.map(() => Math.floor(Math.random() * 58) + 14));
+      setAcc(+(96 + Math.random() * 2).toFixed(1));
+      setMs(+(10 + Math.random() * 9).toFixed(1));
+    }, 1800);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <div className="fs-overlay">
+
+      {/* TOP BAR */}
+      <div className="fs-topbar">
+        <div className="fs-live">
+          <div className="fs-dot" />
+          <div>
+            <div className="fs-id">LIVE {stream}</div>
+            <div className="fs-loc">SECTOR 7G-SOUTH &nbsp; 40.7128° N, 74.0060° W</div>
+          </div>
+        </div>
+        <div className="fs-center">
+          <select className="fs-sel" value={stream} onChange={(e) => setStream(e.target.value)}>
+            {["STREAM 01 (NORTH)", "STREAM 02 (EAST)", "STREAM 03 (WEST)", "STREAM 04 (MAIN)"].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <div className="fs-ibtn"><Icon.Eye s={14} c="#fff" /></div>
+          <div className="fs-ibtn" onClick={onClose}><Icon.X s={14} c="#fff" /></div>
+        </div>
+      </div>
+
+      {/* VIDEO + BOUNDING BOX */}
+      <div className="fs-video">
+        {videoRef?.current?.srcObject ? (
+          <video ref={videoRef} autoPlay playsInline muted />
+        ) : (
+          <img
+            src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=75"
+            style={{ filter: "brightness(.45) saturate(.8)" }}
+            alt="stream"
+          />
+        )}
+        {BBOXES.map((b) => (
+          <div
+            key={b.id}
+            className="bbox"
+            style={{
+              left: `${b.x}%`, top: `${b.y}%`,
+              width: `${b.w}%`, height: `${b.h}%`,
+              "--bc": b.color,
+              borderStyle: b.dash ? "dashed" : "solid",
+            }}
+          >
+            <div className="bbox-tag">{b.label} &nbsp; {b.conf}%</div>
+          </div>
+        ))}
+        <div className="fs-scan" />
+      </div>
+
+      {/* FOOTER STATS */}
+      <div className="fs-foot">
+        {/* Kiri: jumlah deteksi */}
+        <div className="fs-stats">
+          <div className="fs-big">
+            <div className="fs-lbl">Total Detected</div>
+            <div className="fs-val">04</div>
+            <div className="fs-sub">Active PPE</div>
+          </div>
+          <div className="fs-sm">
+            <div className="fs-sm-item">
+              <div className="fs-lbl">Helmets</div>
+              <div className="fs-sm-val">02</div>
+            </div>
+            <div className="fs-sm-item">
+              <div className="fs-lbl">Vests</div>
+              <div className="fs-sm-val">02</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tengah: bar chart */}
+        <div className="fs-bars">
+          {bars.map((h, i) => (
+            <div key={i} className="fs-bar" style={{ height: `${h}%` }} />
+          ))}
+        </div>
+
+        {/* Kanan: akurasi + teknis */}
+        <div className="fs-right">
+          <div className="fs-tech">
+            <div className="fs-tech-item">
+              <div className="fs-lbl">Inference Speed</div>
+              <div className="fs-tech-val">{ms}ms</div>
+            </div>
+            <div className="fs-tech-item">
+              <div className="fs-lbl">Buffer Health</div>
+              <div className="fs-buf">
+                {[1, 1, 1, 0].map((on, i) => (
+                  <div key={i} className={`fs-bs ${on ? "on" : "off"}`} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div className="fs-lbl">Avg. Accuracy</div>
+            <div className="fs-acc">{acc}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   SUB-COMPONENT: Kartu hasil deteksi
+───────────────────────────────────────── */
+function ResultCards({ r }) {
+  return (
+    <>
+      {/* Alert status */}
+      <div className={`r-alert ${r.missing ? "warn" : "ok"}`}>
+        <div className="r-alert-ic">
+          {r.missing
+            ? <Icon.AlertTriangle s={16} c={T.red}   />
+            : <Icon.Check         s={16} c={T.green} />
+          }
+        </div>
+        <div>
+          <div className="r-title">
+            {r.missing ? "PPE Tidak Lengkap" : "PPE Lengkap"}
+          </div>
+          <div className="r-sub">{r.h} helmet, {r.v} vest terdeteksi</div>
+        </div>
+      </div>
+
+      {/* Stat grid */}
+      <div className="stat-row">
+        {/* Helmet count */}
+        <div className="stat-box">
+          <div className="stat-ic" style={{ background: "rgba(45,125,210,.1)" }}>
+            <Icon.HardHat s={17} c={T.accent} />
+          </div>
+          <div className="stat-num">{r.h}</div>
+          <div className="stat-lbl">Helmet</div>
+        </div>
+
+        {/* Vest count */}
+        <div className="stat-box">
+          <div className="stat-ic" style={{ background: "rgba(240,180,41,.1)" }}>
+            <Icon.Vest s={17} c={T.gold} />
+          </div>
+          <div className="stat-num">{r.v}</div>
+          <div className="stat-lbl">Vest</div>
+        </div>
+
+        {/* Helmet confidence */}
+        <div className="conf-box">
+          <div className="conf-pill ok">
+            <Icon.HardHat s={11} c={T.green} /> Helmet Detected
+          </div>
+          <div className="conf-row"><span>Status</span><span className="ok">Benar</span></div>
+          <div className="conf-row"><span>Confidence</span><span>{r.hc}%</span></div>
+          <div className="conf-bar">
+            <div className="conf-fill" style={{ width: `${r.hc}%`, background: T.green }} />
+          </div>
+        </div>
+
+        {/* Vest confidence */}
+        <div className="conf-box">
+          <div className={`conf-pill ${r.missing ? "warn" : "ok"}`}>
+            <Icon.Vest s={11} c={r.missing ? T.red : T.green} />
+            {r.missing ? "Missing Vest" : "Vest Detected"}
+          </div>
+          <div className="conf-row">
+            <span>Status</span>
+            <span className={r.missing ? "warn" : "ok"}>{r.missing ? "Salah" : "Benar"}</span>
+          </div>
+          <div className="conf-row"><span>Confidence</span><span>{r.vc}%</span></div>
+          <div className="conf-bar">
+            <div className="conf-fill" style={{ width: `${r.vc}%`, background: r.missing ? T.red : T.green }} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────
+   MAIN COMPONENT: Detection Page
+───────────────────────────────────────── */
+export default function DetectionPage({ setPage }) {
+  const videoRef = useRef(null);
+
+  const [camOn,    setCamOn]    = useState(false);
+  const [cameras,  setCameras]  = useState([]);
+  const [camIdx,   setCamIdx]   = useState(0);
+  const [fs,       setFs]       = useState(false);
+  const [wsStatus, setWsStatus] = useState("off");
+  const [camRes,   setCamRes]   = useState(null);
+  const [imgSrc,   setImgSrc]   = useState(null);
+  const [imgRes,   setImgRes]   = useState(null);
+  const [drag,     setDrag]     = useState(false);
+
+  // Enumerate kamera yang tersedia
+  useEffect(() => {
+    navigator.mediaDevices?.enumerateDevices()
+      .then((devs) => setCameras(devs.filter((d) => d.kind === "videoinput")))
+      .catch(() => {});
+  }, []);
+
+  // Simulasi WebSocket saat kamera aktif
+  // ──────────────────────────────────────
+  // TODO: ganti interval di bawah dengan WebSocket nyata:
+  //
+  // const ws = new WebSocket("ws://localhost:8000/ws/detect");
+  // ws.onmessage = (e) => {
+  //   const data = JSON.parse(e.data);
+  //   setCamRes({
+  //     h: data.detections.filter(d => d.label === "helmet").length,
+  //     v: data.detections.filter(d => d.label === "vest").length,
+  //     missing: !data.detections.some(d => d.label === "vest"),
+  //     hc: (data.detections.find(d => d.label === "helmet")?.confidence * 100 || 0).toFixed(1),
+  //     vc: (data.detections.find(d => d.label === "vest")?.confidence  * 100 || 0).toFixed(1),
+  //   });
+  // };
+  // ──────────────────────────────────────
+  useEffect(() => {
+    if (!camOn) { setWsStatus("off"); setCamRes(null); return; }
+    setWsStatus("on");
+    const iv = setInterval(() => {
+      const h = Math.floor(Math.random() * 2) + 1;
+      const v = Math.floor(Math.random() * 2);
+      setCamRes({
+        h, v, missing: v === 0,
+        hc: +(86 + Math.random() * 12).toFixed(1),
+        vc: +(75 + Math.random() * 22).toFixed(1),
+      });
+    }, 2000);
+    return () => clearInterval(iv);
+  }, [camOn]);
+
+  // Toggle kamera on/off
+  const toggleCam = useCallback(async () => {
+    if (camOn) {
+      videoRef.current?.srcObject?.getTracks().forEach((t) => t.stop());
+      if (videoRef.current) videoRef.current.srcObject = null;
+      setCamOn(false);
+    } else {
+      try {
+        const constraint = cameras[camIdx]
+          ? { deviceId: { exact: cameras[camIdx].deviceId } }
+          : true;
+        const stream = await navigator.mediaDevices.getUserMedia({ video: constraint });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+        setCamOn(true);
+      } catch (e) {
+        alert("Tidak dapat mengakses kamera: " + e.message);
+      }
+    }
+  }, [camOn, cameras, camIdx]);
+
+  // Handle upload gambar
+  const handleFile = (file) => {
+    setImgRes(null);
+    setImgSrc(URL.createObjectURL(file));
+    // Simulasi deteksi 1.3 detik
+    // TODO: ganti dengan fetch ke POST /api/detect/image
+    setTimeout(() => {
+      const h = Math.floor(Math.random() * 2) + 1;
+      const v = Math.floor(Math.random() * 2);
+      setImgRes({
+        h, v, missing: v === 0,
+        hc: +(87 + Math.random() * 11).toFixed(1),
+        vc: +(76 + Math.random() * 21).toFixed(1),
+      });
+    }, 1300);
+  };
+
+  const camName = cameras[camIdx]?.label || `Kamera ${camIdx + 1}`;
+
+  return (
+    <div className="det-page">
+      {fs && <FullScreen onClose={() => setFs(false)} videoRef={videoRef} />}
+
+      {/* HEADER */}
+      <div className="det-hdr">
+        <h1>PPE Detection</h1>
+        <p>Pilih mode deteksi melalui kamera realtime atau upload gambar.</p>
+      </div>
+
+      <div className="det-body">
+
+        {/* ── CARD 1: KAMERA REAL-TIME ── */}
+        <div className="det-card">
+          <div className="det-card-head">
+            <div className="det-card-ic" style={{ background: "rgba(8,145,178,.1)" }}>
+              <Icon.Video s={22} c={T.teal} />
+            </div>
+            <div>
+              <div className="det-card-title">Deteksi Kamera Real-time</div>
+              <div className="det-card-sub">Pantau kepatuhan PPE secara langsung via WebRTC + WebSocket</div>
+            </div>
+          </div>
+
+          {/* Status WebSocket */}
+          <div className={`ws-pill ${wsStatus}`}>
+            <div className={`ws-dot ${wsStatus}`} />
+            {wsStatus === "on"
+              ? "WebSocket Terhubung — Menerima data deteksi"
+              : "WebSocket Tidak Terhubung"}
+          </div>
+
+          {/* Kontrol kamera */}
+          <div className="cam-row">
+            <button
+              className="btn-outline"
+              onClick={() => setCamIdx((i) => (i + 1) % (cameras.length || 1))}
+            >
+              <Icon.Camera s={13} c={T.muted} /> {camName}
+            </button>
+            <button
+              className={camOn ? "btn-danger" : "btn-navy"}
+              onClick={toggleCam}
+            >
+              {camOn
+                ? <><Icon.X s={13} c={T.red} /> Nonaktifkan</>
+                : <><Icon.Video s={13} c="#fff" /> Aktifkan Kamera</>
+              }
+            </button>
+            {camOn && (
+              <button className="btn-teal" onClick={() => setFs(true)}>
+                <Icon.Maximize s={13} c={T.teal} /> Full Screen
+              </button>
+            )}
+          </div>
+
+          {/* Video player */}
+          <div className="video-box">
+            <video
+              ref={videoRef}
+              autoPlay playsInline muted
+              style={{ display: camOn ? "block" : "none" }}
+            />
+            {!camOn && (
+              <div className="vid-ph">
+                <Icon.Camera s={42} c="rgba(255,255,255,.12)" />
+                <p>Klik "Aktifkan Kamera" untuk mulai deteksi</p>
+              </div>
+            )}
+          </div>
+
+          {/* Hasil deteksi */}
+          {camRes ? (
+            <ResultCards r={camRes} />
+          ) : camOn ? (
+            <div className="r-alert idle" style={{ marginTop: 16 }}>
+              <div className="r-alert-ic"><Icon.Loader s={16} c={T.muted} /></div>
+              <div>
+                <div className="r-title">Menunggu data deteksi...</div>
+                <div className="r-sub">Model sedang memproses frame kamera</div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* ── CARD 2: UPLOAD GAMBAR ── */}
+        <div className="det-card">
+          <div className="det-card-head">
+            <div className="det-card-ic" style={{ background: "rgba(45,125,210,.1)" }}>
+              <Icon.Upload s={22} c={T.accent} />
+            </div>
+            <div>
+              <div className="det-card-title">Deteksi dengan Gambar</div>
+              <div className="det-card-sub">Upload foto area kerja dan analisis PPE secara instan</div>
+            </div>
+          </div>
+
+          {/* Drop zone */}
+          <label
+            className={`drop-zone${drag ? " drag" : ""}`}
+            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={(e) => {
+              e.preventDefault(); setDrag(false);
+              const f = e.dataTransfer.files[0];
+              if (f?.type.startsWith("image/")) handleFile(f);
+            }}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => { if (e.target.files[0]) handleFile(e.target.files[0]); }}
+              style={{ display: "none" }}
+            />
+            <div className="drop-ic"><Icon.Upload s={22} c={T.soft} /></div>
+            <div className="drop-text">Drag &amp; drop gambar di sini atau klik untuk upload</div>
+            <div className="drop-hint">Format: JPG, PNG, WebP · Maks. 10MB</div>
+          </label>
+
+          {/* Preview + hasil */}
+          {imgSrc && (
+            <div style={{ marginTop: 18 }}>
+              <img
+                src={imgSrc}
+                alt="preview"
+                style={{ width: "100%", maxHeight: 360, objectFit: "contain", background: "#080f1e", borderRadius: 14, display: "block" }}
+              />
+              {!imgRes ? (
+                <div className="r-alert idle" style={{ marginTop: 12 }}>
+                  <div className="r-alert-ic"><Icon.Loader s={16} c={T.muted} /></div>
+                  <div>
+                    <div className="r-title">Memproses gambar...</div>
+                    <div className="r-sub">AI sedang menganalisis gambar Anda</div>
+                  </div>
+                </div>
+              ) : (
+                <ResultCards r={imgRes} />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}

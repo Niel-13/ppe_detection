@@ -1,0 +1,3 @@
+# Letakkan file model Anda di folder ini
+# Contoh: best.pt (YOLOv8), model.h5 (TensorFlow/Keras)
+# Lalu atur MODEL_PATH di file .env
