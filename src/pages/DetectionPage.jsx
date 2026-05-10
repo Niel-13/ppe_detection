@@ -93,54 +93,102 @@ function getCamError(err) {
       return "Tidak ada kamera terdeteksi. Pastikan kamera terpasang.";
     case "NotReadableError":
       return "Kamera digunakan aplikasi lain (Zoom, Meet, dll). Tutup dulu, lalu coba lagi.";
+    case "SecurityError":
+    case "TypeError":
+      return "Akses kamera diblokir browser.\n\nPastikan:\n• Buka via http://localhost:3000 (bukan IP atau domain lain)\n• Atau gunakan HTTPS jika deploy ke server";
     default:
-      return `Gagal akses kamera: ${err.message}\nGunakan localhost atau HTTPS.`;
+      return `Gagal akses kamera: ${err.message}\n\nPastikan buka via localhost:3000 atau HTTPS.`;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════
    BBOX OVERLAY — div overlay posisi berdasar bbox_norm
 ═══════════════════════════════════════════════════════════ */
-function BboxOverlay({ detections }) {
-  if (!detections?.length) return null;
+function BboxOverlay({ detections, videoRef }) {
+  const [rect, setRect] = useState({ offX:0, offY:0, w:1, h:1 });
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    // Hitung area aktual video di dalam container (objectFit:contain)
+    function compute() {
+      const vid = videoRef?.current;
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      // Jika ada elemen video nyata, pakai rasio intrinsiknya
+      const vw = vid?.videoWidth  || (vid?.clientWidth)  || wrap.clientWidth;
+      const vh = vid?.videoHeight || (vid?.clientHeight) || wrap.clientHeight;
+      const cw = wrap.clientWidth;
+      const ch = wrap.clientHeight;
+      const vr = vw / vh;
+      const cr = cw / ch;
+      let rw, rh;
+      if (vr > cr) { rw = cw; rh = cw / vr; }
+      else         { rh = ch; rw = ch * vr; }
+      setRect({
+        offX: (cw - rw) / 2,
+        offY: (ch - rh) / 2,
+        w: rw,
+        h: rh,
+      });
+    }
+    compute();
+    const ro = new ResizeObserver(compute);
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    // Juga observe video untuk saat videoWidth berubah
+    const vid = videoRef?.current;
+    if (vid) {
+      vid.addEventListener("loadedmetadata", compute);
+      vid.addEventListener("resize", compute);
+    }
+    return () => {
+      ro.disconnect();
+      if (vid) {
+        vid.removeEventListener("loadedmetadata", compute);
+        vid.removeEventListener("resize", compute);
+      }
+    };
+  }, [videoRef]);
+
   return (
-    <>
-      {detections.map((d, i) => {
+    <div ref={wrapRef} style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
+      {detections?.map((d, i) => {
         const [x1, y1, x2, y2] = d.bbox_norm;
         const color = CLASS_COLOR[d.label] || "#fff";
+        const left   = rect.offX + x1 * rect.w;
+        const top    = rect.offY + y1 * rect.h;
+        const width  = (x2 - x1) * rect.w;
+        const height = (y2 - y1) * rect.h;
         return (
           <div
             key={i}
             style={{
               position:  "absolute",
-              left:      `${x1 * 100}%`,
-              top:       `${y1 * 100}%`,
-              width:     `${(x2 - x1) * 100}%`,
-              height:    `${(y2 - y1) * 100}%`,
+              left, top, width, height,
               border:    `2px solid ${color}`,
-              boxShadow: `0 0 8px ${color}80`,
+              boxShadow: `0 0 10px ${color}90, inset 0 0 10px ${color}10`,
               pointerEvents: "none",
             }}
           >
             <div style={{
               position:   "absolute",
-              top:        -22,
+              top:        -24,
               left:       -2,
               background: color,
               color:      "#0c1f35",
               fontSize:   11,
               fontWeight: 800,
-              padding:    "2px 7px",
+              padding:    "2px 8px",
               borderRadius: "4px 4px 4px 0",
               whiteSpace: "nowrap",
               letterSpacing: ".3px",
+              boxShadow: `0 2px 8px ${color}60`,
             }}>
-              {CLASS_LABEL[d.label] || d.label} &nbsp; {(d.confidence * 100).toFixed(1)}%
+              {CLASS_LABEL[d.label] || d.label} {(d.confidence * 100).toFixed(1)}%
             </div>
           </div>
         );
       })}
-    </>
+    </div>
   );
 }
 
@@ -260,9 +308,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
 
         {/* Bbox overlay — hanya tampil saat showInfo aktif */}
         {showInfo && (
-          <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
-            <BboxOverlay detections={detections}/>
-          </div>
+          <BboxOverlay detections={detections} videoRef={fsRef}/>
         )}
 
         {/* Alert banner pelanggaran */}
@@ -615,7 +661,7 @@ export default function DetectionPage({ setPage }) {
 
   /* ── WebSocket + frame sender ── */
   useEffect(() => {
-    if (!camOn || !mediaStream) {
+    if (!mediaStream) {
       setWsStatus("off");
       setDetections([]);
       setLiveStats(null);
@@ -688,10 +734,11 @@ export default function DetectionPage({ setPage }) {
       clearInterval(frameTimerRef.current);
       ws.close();
     };
-  }, [camOn, mediaStream]);
+  }, [mediaStream]);
 
   /* ── Toggle kamera ── */
   const toggleCam = useCallback(async () => {
+    // Nonaktifkan
     if (camOn) {
       mediaStream?.getTracks().forEach(t => t.stop());
       setMediaStream(null);
@@ -700,29 +747,38 @@ export default function DetectionPage({ setPage }) {
       return;
     }
 
+    // Cek support
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCamError("Browser tidak mendukung WebRTC.\nGunakan Chrome/Firefox/Edge via localhost atau HTTPS.");
+      setCamError("Akses kamera tidak didukung.\nBuka via http://localhost:3000 atau gunakan HTTPS.");
       return;
     }
 
     setCamError("");
     try {
-      const vc = cameras[camIdx]
-        ? { deviceId: { exact: cameras[camIdx].deviceId } }
-        : { facingMode: "user" };
+      // Pakai deviceId jika sudah ada daftar kamera, fallback ke default
+      const camList = await navigator.mediaDevices.enumerateDevices()
+        .then(d => d.filter(x => x.kind === "videoinput"))
+        .catch(() => []);
+
+      // Update daftar kamera sekaligus
+      setCameras(camList);
+
+      const selectedCam = camList[camIdx] || camList[0];
+      const vc = selectedCam?.deviceId
+        ? { deviceId: { exact: selectedCam.deviceId } }
+        : true;
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: vc, audio: false });
-      await refreshCameras();
+
+      // Set stream dulu, camOn jadi true — WebSocket useEffect akan trigger
       setMediaStream(stream);
       setCamOn(true);
-
-      // Resume AudioContext saat ada user gesture (klik tombol)
       getAudioCtx();
     } catch (err) {
       console.error("Cam error:", err.name, err.message);
       setCamError(getCamError(err));
     }
-  }, [camOn, cameras, camIdx, mediaStream, refreshCameras]);
+  }, [camOn, camIdx, mediaStream]);
 
   /* ── Ganti kamera ── */
   const switchCamera = useCallback(async () => {
@@ -797,6 +853,11 @@ export default function DetectionPage({ setPage }) {
                     : wsStatus === "error" ? "err"
                     : "off";
 
+  const wsPillText = wsStatus === "on"         ? "WebSocket Terhubung — Mengirim frame ke model"
+                   : wsStatus === "connecting"  ? "Menghubungkan ke backend..."
+                   : wsStatus === "error"       ? "Gagal terhubung ke backend (pastikan server berjalan)"
+                   : "WebSocket Tidak Aktif";
+
   return (
     <div className="det-page">
       {/* Canvas tersembunyi untuk capture frame */}
@@ -850,12 +911,54 @@ export default function DetectionPage({ setPage }) {
             </div>
           </div>
 
+          {/* Status WebSocket */}
+          <div className={`ws-pill ${wsPillClass}`} style={
+            wsStatus === "error" ? { background:"rgba(220,38,38,.08)", border:"1px solid rgba(220,38,38,.2)", color:T.red } : {}
+          }>
+            <div className={`ws-dot ${wsPillClass === "on" ? "on" : "off"}`}/>
+            {wsPillText}
+          </div>
+
           {/* Kontrol kamera */}
           <div className="cam-row">
-            {cameras.length > 1 && (
-              <button className="btn-outline" onClick={switchCamera}>
-                <Icon.Camera s={13} c={T.muted}/> {camLabel}
-              </button>
+            {cameras.length > 0 && (
+              <div style={{ display:"flex", alignItems:"center", gap:6,
+                background:"rgba(14,32,56,.05)", border:`1px solid ${T.border}`,
+                borderRadius:8, padding:"0 10px", height:34,
+              }}>
+                <Icon.Camera s={13} c={T.muted}/>
+                <select
+                  value={camIdx}
+                  onChange={async e => {
+                    const i = Number(e.target.value);
+                    setCamIdx(i);
+                    if (!camOn || !cameras[i]) return;
+                    // Jika kamera aktif, langsung switch stream
+                    mediaStream?.getTracks().forEach(t => t.stop());
+                    try {
+                      const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: { exact: cameras[i].deviceId } },
+                        audio: false,
+                      });
+                      setMediaStream(stream);
+                    } catch (err) {
+                      setCamError(getCamError(err));
+                    }
+                  }}
+                  style={{
+                    background:"transparent", border:"none", outline:"none",
+                    fontFamily:"inherit", fontSize:13, fontWeight:600,
+                    color: T.navy, cursor:"pointer",
+                    maxWidth:160,
+                  }}
+                >
+                  {cameras.map((cam, i) => (
+                    <option key={cam.deviceId || i} value={i}>
+                      {cam.label?.replace(/\s*\(.*?\)/g,"").trim() || `Kamera ${i+1}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
             <button className={camOn ? "btn-danger" : "btn-navy"} onClick={toggleCam}>
               {camOn
@@ -873,9 +976,21 @@ export default function DetectionPage({ setPage }) {
           {camError && (
             <div className="r-alert warn" style={{ marginBottom:16 }}>
               <div className="r-alert-ic"><Icon.AlertTriangle s={16} c={T.red}/></div>
-              <div>
+              <div style={{ flex:1 }}>
                 <div className="r-title">Gagal Mengakses Kamera</div>
                 <div className="r-sub" style={{ whiteSpace:"pre-line" }}>{camError}</div>
+                {/* Panduan cepat jika bukan localhost */}
+                {(window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") && (
+                  <div style={{
+                    marginTop:10, padding:"10px 14px", borderRadius:8,
+                    background:"rgba(220,38,38,.07)", border:"1px solid rgba(220,38,38,.15)",
+                    fontSize:12, color:"#64748b", lineHeight:1.7,
+                  }}>
+                    <strong style={{ color:"#dc2626" }}>⚠ URL saat ini bukan localhost</strong><br/>
+                    Buka aplikasi di: <code style={{ background:"rgba(0,0,0,.06)", padding:"1px 5px", borderRadius:4 }}>http://localhost:3000</code><br/>
+                    Atau jalankan: <code style={{ background:"rgba(0,0,0,.06)", padding:"1px 5px", borderRadius:4 }}>npm start</code> di folder project
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -887,7 +1002,7 @@ export default function DetectionPage({ setPage }) {
             {/* Bbox overlay real-time */}
             {camOn && (
               <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
-                <BboxOverlay detections={detections}/>
+                <BboxOverlay detections={detections} videoRef={videoRef}/>
               </div>
             )}
             {!camOn && !camError && (
@@ -952,7 +1067,7 @@ export default function DetectionPage({ setPage }) {
                   style={{ width:"100%", maxHeight:400, objectFit:"contain", display:"block" }}/>
                 {imgRes?.status !== "error" && imgDets.length > 0 && (
                   <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
-                    <BboxOverlay detections={imgDets}/>
+                    <BboxOverlay detections={imgDets} videoRef={null}/>
                   </div>
                 )}
               </div>

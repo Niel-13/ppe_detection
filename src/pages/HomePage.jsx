@@ -5,40 +5,43 @@ import { T } from "../constants/tokens";
 export default function HomePage({ setPage }) {
   return (
     <div>
-      {/* ── HERO ── */}
+
+      {/* ══════ HERO ══════ */}
       <section className="hero">
         <div className="hero-bg-img" />
         <div className="hero-grid" />
         <div className="hero-content">
 
-          {/* Kiri: teks */}
+          {/* Kiri */}
           <div className="hero-left">
             <div className="hero-badge">
               <span className="hero-badge-dot" />
-              AI-Powered Workplace Safety
+              Computer Vision · Keselamatan Kerja
             </div>
-            <h1>PPE Detection <em>System</em></h1>
+            <h1>Deteksi APD <em>Otomatis</em><br/>Berbasis AI</h1>
             <p className="hero-sub">
-              Sistem deteksi otomatis Alat Pelindung Diri (APD) berbasis Computer Vision.
-              Pantau helm dan rompi keselamatan pekerja secara real-time menggunakan AI.
+              Monitor pemakaian helm dan rompi keselamatan pekerja secara langsung
+              dari kamera menggunakan model YOLOv8 ONNX — ringan, cepat,
+              dan berjalan sepenuhnya di server lokal Anda.
             </p>
             <div className="hero-actions">
               <button className="btn-primary" onClick={() => setPage("detection")}>
-                Coba Sekarang
+                <Icon.Video s={15} c={T.navy} /> Mulai Deteksi
               </button>
               <button className="btn-ghost" onClick={() => setPage("about")}>
-                Pelajari Lebih
+                Pelajari Cara Kerja
               </button>
             </div>
           </div>
 
-          {/* Kanan: stat cards */}
+          {/* Kanan — stat cards */}
           <div className="hero-right">
             <div className="hero-stats">
               {[
-                { icon: <Icon.HardHat s={20} c="#7dc4f7" />, num: "98%",  lbl: "Akurasi Helmet",     cls: "" },
-                { icon: <Icon.Vest    s={20} c={T.gold}  />, num: "96%",  lbl: "Akurasi Vest",       cls: "gold" },
-                { icon: <Icon.Activity s={20} c="#7dc4f7"/>, num: "5 FPS",lbl: "Realtime Detection", cls: "" },
+                { icon: <Icon.HardHat  s={20} c="#7dc4f7" />, num: "4",       lbl: "Kelas Deteksi",     cls: "" },
+                { icon: <Icon.Activity s={20} c={T.gold}  />, num: "~200ms",  lbl: "Latensi per Frame", cls: "gold" },
+                { icon: <Icon.Cpu      s={20} c="#7dc4f7" />, num: "ONNX",    lbl: "Format Model",      cls: "" },
+                { icon: <Icon.Shield   s={20} c={T.gold}  />, num: "Lokal",   lbl: "Berjalan di Server", cls: "gold" },
               ].map((s, i) => (
                 <div key={i} className={`h-stat ${s.cls}`}>
                   {s.icon}
@@ -51,13 +54,13 @@ export default function HomePage({ setPage }) {
         </div>
       </section>
 
-      {/* ── FEATURE STRIP ── */}
+      {/* ══════ FEATURE STRIP ══════ */}
       <div className="feat-strip">
         <div className="feat-inner">
           {[
-            { icon: <Icon.HardHat s={20} c={T.accent} />, bg: "rgba(45,125,210,.1)",  title: "Helmet Detection",     desc: "Deteksi helm keselamatan otomatis" },
-            { icon: <Icon.Vest    s={20} c={T.gold}   />, bg: "rgba(240,180,41,.12)", title: "Vest Detection",       desc: "Identifikasi rompi reflektif pekerja" },
-            { icon: <Icon.Video   s={20} c={T.teal}   />, bg: "rgba(8,145,178,.1)",   title: "Real-Time Monitoring", desc: "Pantau via kamera langsung (WebRTC)" },
+            { icon: <Icon.HardHat s={20} c={T.accent} />, bg: "rgba(45,125,210,.1)",  title: "Deteksi Helm",        desc: "Identifikasi safety helmet secara otomatis dari kamera" },
+            { icon: <Icon.Shield  s={20} c={T.gold}   />, bg: "rgba(240,180,41,.12)", title: "Deteksi Rompi",       desc: "Kenali safety vest di setiap frame secara real-time" },
+            { icon: <Icon.Video   s={20} c={T.teal}   />, bg: "rgba(8,145,178,.1)",   title: "Streaming Kamera",    desc: "Koneksi langsung via WebRTC + WebSocket lokal" },
           ].map((f) => (
             <div key={f.title} className="feat-item">
               <div className="feat-ic" style={{ background: f.bg }}>{f.icon}</div>
@@ -70,58 +73,59 @@ export default function HomePage({ setPage }) {
         </div>
       </div>
 
-      {/* ── APA ITU PPE ── */}
+      {/* ══════ APA ITU APD ══════ */}
       <section className="sec" style={{ background: T.white }}>
         <div className="sec-inner">
           <div className="sec-hdr">
             <div className="sec-tag"><Icon.BookOpen s={12} c={T.accent} /> Pengenalan</div>
-            <h2 className="sec-title">Apa itu PPE?</h2>
+            <h2 className="sec-title">Apa itu APD?</h2>
             <p className="sec-sub" style={{ maxWidth: 500 }}>
-              Personal Protective Equipment (APD) adalah perlengkapan wajib di area kerja
-              berbahaya untuk melindungi pekerja dari risiko kecelakaan.
+              Alat Pelindung Diri (APD) adalah perlengkapan wajib di area kerja
+              berbahaya — bukan sekadar aturan, tapi garis pertahanan terakhir
+              sebelum kecelakaan terjadi.
             </p>
           </div>
 
           <div className="about-grid">
-            {/* Gambar */}
             <div>
               <div className="about-img-wrap">
                 <img
                   src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=80"
-                  alt="Pekerja dengan PPE"
+                  alt="Pekerja dengan APD"
                 />
               </div>
               <div className="about-caption">
-                Penggunaan APD yang benar dapat mencegah kecelakaan, cedera, bahkan kematian
-                akibat paparan bahan berbahaya, suhu ekstrem, atau kecelakaan mekanik.
+                Berdasarkan data Kemnaker, mayoritas kecelakaan kerja di sektor
+                konstruksi dan industri terjadi akibat APD yang tidak digunakan
+                secara konsisten — bukan karena tidak tersedia.
               </div>
             </div>
 
-            {/* Teks */}
             <div>
               <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.8, marginBottom: 22 }}>
-                APD adalah perlengkapan pelindung yang digunakan untuk menjaga keselamatan
-                dan kesehatan pekerja dari berbagai bahaya di tempat kerja.
+                Sistem ini hadir untuk menutup celah tersebut: mendeteksi
+                secara visual apakah setiap pekerja sudah mengenakan APD yang
+                sesuai — secara otomatis, konsisten, dan tanpa intervensi manual.
               </p>
               <div className="ppe-items">
                 {[
                   {
                     icon: <Icon.HardHat s={18} c={T.accent} />,
                     bg: "rgba(45,125,210,.1)",
-                    title: "1. Safety Helmet",
-                    desc: "Melindungi kepala dari benturan benda keras. Wajib di area konstruksi, pertambangan, dan manufaktur.",
+                    title: "Safety Helmet",
+                    desc: "Melindungi kepala dari benturan benda keras. Wajib di area konstruksi, pertambangan, dan manufaktur berat.",
                   },
                   {
-                    icon: <Icon.Vest s={18} c={T.gold} />,
+                    icon: <Icon.Shield s={18} c={T.gold} />,
                     bg: "rgba(240,180,41,.12)",
-                    title: "2. Safety Vest",
-                    desc: "Rompi reflektif meningkatkan visibilitas pekerja di area lalu lintas kendaraan dan pencahayaan rendah.",
+                    title: "Safety Vest",
+                    desc: "Rompi reflektif meningkatkan visibilitas pekerja di area lalu lintas kendaraan dan kondisi pencahayaan rendah.",
                   },
                   {
-                    icon: <Icon.Shield s={18} c="#9333ea" />,
+                    icon: <Icon.BookOpen s={18} c="#9333ea" />,
                     bg: "rgba(147,51,234,.08)",
                     title: "Dasar Hukum",
-                    desc: "Diwajibkan UU No. 1/1970 Keselamatan Kerja dan Permenaker No. 8/2010.",
+                    desc: "Diwajibkan UU No. 1/1970 Keselamatan Kerja dan Permenaker No. 8/2010 — pelanggaran dapat berujung sanksi.",
                   },
                 ].map((item) => (
                   <div key={item.title} className="ppe-item">
@@ -138,32 +142,32 @@ export default function HomePage({ setPage }) {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* ══════ HOW IT WORKS ══════ */}
       <section className="sec">
         <div className="sec-inner">
           <div className="sec-hdr tc">
             <div className="sec-tag"><Icon.Settings s={12} c={T.accent} /> Cara Kerja</div>
-            <h2 className="sec-title">Bagaimana Sistem Bekerja?</h2>
+            <h2 className="sec-title">Dari Kamera ke Hasil Deteksi</h2>
             <p className="sec-sub" style={{ maxWidth: 480, margin: "10px auto 0" }}>
-              Tiga tahap sederhana dari kamera hingga hasil deteksi real-time
+              Tiga tahap yang terjadi dalam hitungan milidetik — sepenuhnya otomatis
             </p>
           </div>
           <div className="how-grid">
             {[
               {
                 n: "01", icon: <Icon.Camera s={22} c={T.accent} />, bg: "rgba(45,125,210,.1)",
-                title: "Capture Input",
-                desc: "Browser mengakses kamera via WebRTC (getUserMedia) atau menerima gambar upload. Frame diambil Canvas API tiap 200ms.",
+                title: "Ambil Frame",
+                desc: "Browser mengakses kamera via WebRTC. Frame diambil Canvas API tiap 200ms, dikompresi ke JPEG, dan dikirim ke backend via WebSocket.",
               },
               {
                 n: "02", icon: <Icon.Cpu s={22} c="#9333ea" />, bg: "rgba(147,51,234,.1)",
-                title: "AI Analysis — YOLOv8",
-                desc: "FastAPI backend memproses frame dengan YOLOv8. Setiap frame dianalisis untuk mendeteksi helmet dan vest beserta confidence score.",
+                title: "Inferensi Model",
+                desc: "FastAPI menerima frame dan menjalankan model YOLOv8 ONNX. Setiap frame diproses untuk mendeteksi 4 kondisi APD beserta confidence score.",
               },
               {
                 n: "03", icon: <Icon.Activity s={22} c={T.teal} />, bg: "rgba(8,145,178,.1)",
-                title: "Hasil via WebSocket",
-                desc: "Hasil (bounding box, label, confidence) dikirim real-time via WebSocket ke React frontend dan ditampilkan di dashboard.",
+                title: "Tampil di Dashboard",
+                desc: "Hasil bounding box, label, dan status kepatuhan dikirim balik via WebSocket dan langsung muncul sebagai overlay di video secara real-time.",
               },
             ].map((c) => (
               <div key={c.n} className="how-card">
@@ -177,17 +181,20 @@ export default function HomePage({ setPage }) {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      {/* ══════ CTA ══════ */}
       <section className="cta-sec">
         <div className="cta-inner">
-          <h2>Siap Tingkatkan Keselamatan Kerja?</h2>
-          <p>Mulai gunakan sistem deteksi PPE berbasis AI sekarang juga</p>
+          <h2>Siap Mencoba Sistemnya?</h2>
+          <p>
+            Aktifkan kamera atau upload foto area kerja —
+            hasil deteksi APD langsung terlihat tanpa konfigurasi tambahan.
+          </p>
           <div className="cta-btns">
             <button className="btn-primary" onClick={() => setPage("detection")}>
-              Mulai Deteksi 
+              Buka Halaman Deteksi
             </button>
             <button className="btn-ghost" onClick={() => setPage("about")}>
-              Tentang Sistem
+              Pelajari Lebih Lanjut
             </button>
           </div>
         </div>
