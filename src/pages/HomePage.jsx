@@ -39,7 +39,6 @@ export default function HomePage({ setPage }) {
                 { icon: <Icon.HardHat s={20} c="#7dc4f7" />, num: "98%",  lbl: "Akurasi Helmet",     cls: "" },
                 { icon: <Icon.Vest    s={20} c={T.gold}  />, num: "96%",  lbl: "Akurasi Vest",       cls: "gold" },
                 { icon: <Icon.Activity s={20} c="#7dc4f7"/>, num: "5 FPS",lbl: "Realtime Detection", cls: "" },
-                { icon: <Icon.Shield  s={20} c={T.gold}  />, num: "24/7", lbl: "Monitoring Aktif",   cls: "gold" },
               ].map((s, i) => (
                 <div key={i} className={`h-stat ${s.cls}`}>
                   {s.icon}

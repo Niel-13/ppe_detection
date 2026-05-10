@@ -797,11 +797,6 @@ export default function DetectionPage({ setPage }) {
                     : wsStatus === "error" ? "err"
                     : "off";
 
-  const wsPillText = wsStatus === "on"         ? "WebSocket Terhubung — Mengirim frame ke model"
-                   : wsStatus === "connecting"  ? "Menghubungkan ke backend..."
-                   : wsStatus === "error"       ? "Gagal terhubung ke backend (pastikan server berjalan)"
-                   : "WebSocket Tidak Aktif";
-
   return (
     <div className="det-page">
       {/* Canvas tersembunyi untuk capture frame */}
@@ -853,14 +848,6 @@ export default function DetectionPage({ setPage }) {
               <div className="det-card-title">Deteksi Kamera Real-time</div>
               <div className="det-card-sub">WebRTC → WebSocket → YOLOv8 ONNX → hasil langsung</div>
             </div>
-          </div>
-
-          {/* Status WebSocket */}
-          <div className={`ws-pill ${wsPillClass}`} style={
-            wsStatus === "error" ? { background:"rgba(220,38,38,.08)", border:"1px solid rgba(220,38,38,.2)", color:T.red } : {}
-          }>
-            <div className={`ws-dot ${wsPillClass === "on" ? "on" : "off"}`}/>
-            {wsPillText}
           </div>
 
           {/* Kontrol kamera */}

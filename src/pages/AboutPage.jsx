@@ -156,7 +156,7 @@ export default function AboutPage({ setPage }) {
 
           <p style={{ fontSize:16, color:"rgba(255,255,255,.6)", lineHeight:1.8, maxWidth:560, margin:"0 auto 40px" }}>
             Sistem monitoring Alat Pelindung Diri (APD) secara <em style={{ color:"rgba(255,255,255,.85)", fontStyle:"normal" }}>real-time</em> menggunakan
-            YOLOv8 ONNX — mendeteksi helm dan rompi keselamatan otomatis dari kamera atau foto.
+            YOLOv8 ONNX , mendeteksi helm dan rompi keselamatan otomatis dari kamera atau foto.
           </p>
 
           {/* stat row */}
@@ -198,12 +198,12 @@ export default function AboutPage({ setPage }) {
                 <span style={{ color:T.accent }}>sangat penting?</span>
               </h2>
               <p style={{ fontSize:14, color:T.muted, lineHeight:1.85, marginBottom:20 }}>
-                Setiap tahun, ribuan kecelakaan kerja terjadi di area konstruksi dan industri — mayoritas bisa dicegah jika APD digunakan dengan benar.
+                Setiap tahun, ribuan kecelakaan kerja terjadi di area konstruksi dan industri, mayoritas bisa dicegah jika APD digunakan dengan benar.
                 Sistem ini hadir untuk memastikan setiap pekerja terlindungi secara konsisten, bukan hanya saat inspeksi.
               </p>
               <p style={{ fontSize:14, color:T.muted, lineHeight:1.85 }}>
                 Berdasarkan <strong style={{ color:T.navy }}>UU No. 1/1970</strong> tentang Keselamatan Kerja dan <strong style={{ color:T.navy }}>Permenaker No. 8/2010</strong>,
-                penggunaan APD bukan pilihan — melainkan kewajiban hukum yang pelanggarannya dapat berujung sanksi pidana.
+                penggunaan APD bukan pilihan, melainkan kewajiban hukum yang pelanggarannya dapat berujung sanksi pidana.
               </p>
             </div>
 
@@ -211,7 +211,7 @@ export default function AboutPage({ setPage }) {
             <div style={{ flex:"1 1 280px", display:"flex", flexDirection:"column", gap:12 }}>
               {[
                 { icon:<Icon.HardHat s={18} c="#fff"/>, bg:"linear-gradient(135deg,#2d7dd2,#0891b2)", title:"Safety Helmet", desc:"Melindungi kepala dari benturan & benda jatuh. Wajib di area konstruksi, pertambangan & pabrik berat.", tag:"Wajib" },
-                { icon:<Icon.Shield  s={18} c="#fff"/>, bg:"linear-gradient(135deg,#f0b429,#f97316)", title:"Safety Vest",   desc:"Rompi reflektif meningkatkan visibilitas hingga 300m — esensial di area kendaraan berat & malam hari.", tag:"Wajib" },
+                { icon:<Icon.Shield  s={18} c="#fff"/>, bg:"linear-gradient(135deg,#f0b429,#f97316)", title:"Safety Vest",   desc:"Rompi reflektif meningkatkan visibilitas hingga 300m, esensial di area kendaraan berat & malam hari.", tag:"Wajib" },
               ].map((item, i) => (
                 <div key={i} style={{
                   display:"flex", gap:14, padding:"18px 20px", borderRadius:16,
@@ -461,7 +461,7 @@ export default function AboutPage({ setPage }) {
               Mulai Deteksi Sekarang
             </h2>
             <p style={{ fontSize:14, color:"rgba(255,255,255,.55)", marginBottom:32, maxWidth:440, margin:"0 auto 32px" }}>
-              Aktifkan kamera atau upload foto area kerja — sistem akan langsung mendeteksi kepatuhan APD secara otomatis.
+              Aktifkan kamera atau upload foto area kerja, sistem akan langsung mendeteksi kepatuhan APD secara otomatis.
             </p>
             <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
               <button
