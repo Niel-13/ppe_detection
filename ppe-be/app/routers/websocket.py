@@ -78,6 +78,9 @@ async def websocket_detect(ws: WebSocket):
         while True:
             raw = await ws.receive_text()
 
+            if not raw:
+                continue
+
             # ── Decode Base64 ───────────────────────────
             try:
                 b64 = raw.split(",", 1)[1] if "," in raw else raw
@@ -108,8 +111,9 @@ async def websocket_detect(ws: WebSocket):
 
             await manager.send(ws, {
                 **compliance,
-                "detections":   detections,
+                "detections": detections,
                 "inference_ms": inference_ms,
+                "server_time": time.time(),
             })
 
     except WebSocketDisconnect:

@@ -6,8 +6,12 @@ import { T } from "../constants/tokens";
 /* ═══════════════════════════════════════════════════════════
    KONSTANTA
 ═══════════════════════════════════════════════════════════ */
-const WS_URL      = "ws://localhost:8000/ws/detect";
-const UPLOAD_URL  = "http://localhost:8000/api/detect/image";
+// Auto-detect backend URL agar WebSocket tetap berjalan
+// baik di localhost maupun saat deploy HTTPS.
+const API_HOST = `${window.location.protocol}//${window.location.hostname}:8000`;
+const WS_PROTO = window.location.protocol === "https:" ? "wss:" : "ws:";
+const WS_URL = `${WS_PROTO}//${window.location.hostname}:8000/ws/detect`;
+const UPLOAD_URL = `${API_HOST}/api/detect/image`;
 const FRAME_RATE  = 200; // ms antar frame (5 FPS)
 const BEEP_CD     = 4000; // cooldown beep (ms)
 
@@ -615,6 +619,7 @@ export default function DetectionPage({ setPage }) {
   const wsRef        = useRef(null);
   const lastBeepRef  = useRef(0);
   const frameTimerRef= useRef(null);
+  const sendingFrameRef = useRef(false);
 
   const [mediaStream, setMediaStream] = useState(null);
   const [camOn,       setCamOn]       = useState(false);
@@ -678,20 +683,40 @@ export default function DetectionPage({ setPage }) {
       setWsStatus("on");
 
       // Mulai kirim frame setiap FRAME_RATE ms
+      // Tambahan lock mencegah flood frame ke backend.
       frameTimerRef.current = setInterval(() => {
-        if (ws.readyState !== WebSocket.OPEN) return;
+        if (ws.readyState !== WebSocket.OPEN || sendingFrameRef.current) return;
+
         const vid = videoRef.current;
         const cvs = captureRef.current;
-        if (!vid || !cvs || !vid.videoWidth) return;
 
-        cvs.width  = vid.videoWidth;
-        cvs.height = vid.videoHeight;
-        cvs.getContext("2d").drawImage(vid, 0, 0);
-        ws.send(cvs.toDataURL("image/jpeg", 0.75));
+        if (!vid || !cvs || !vid.videoWidth || !vid.videoHeight) return;
+
+        sendingFrameRef.current = true;
+
+        try {
+          cvs.width  = vid.videoWidth;
+          cvs.height = vid.videoHeight;
+
+          const ctx = cvs.getContext("2d");
+          if (!ctx) {
+            sendingFrameRef.current = false;
+            return;
+          }
+
+          ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
+
+          const frame = cvs.toDataURL("image/jpeg", 0.70);
+          ws.send(frame);
+        } catch (err) {
+          console.error("Frame capture gagal:", err);
+          sendingFrameRef.current = false;
+        }
       }, FRAME_RATE);
     };
 
     ws.onmessage = (e) => {
+      sendingFrameRef.current = false;
       try {
         const data = JSON.parse(e.data);
         if (data.error) { console.error("WS error:", data.error); return; }
@@ -726,6 +751,7 @@ export default function DetectionPage({ setPage }) {
     };
 
     ws.onerror = () => {
+      sendingFrameRef.current = false;
       setWsStatus("error");
       clearInterval(frameTimerRef.current);
     };
