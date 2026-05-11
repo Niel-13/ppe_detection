@@ -43,6 +43,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:${T.bg};color:${T.nav
 .nav{position:sticky;top:0;z-index:200;height:64px;background:rgba(12,31,53,.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid rgba(255,255,255,.07)}
 .nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;transition:opacity .18s}
 .nav-logo:hover{opacity:.85}
+.logo-img-element {width: 45px;height: 45px;border-radius: 8px;object-fit: cover}
 .nav-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,${T.accent},${T.teal});display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(45,125,210,.35)}
 .nav-logo-name{color:#fff;font-size:15px;font-weight:700;letter-spacing:-.2px}
 .nav-logo-sub{color:rgba(255,255,255,.35);font-size:11px;font-weight:400}

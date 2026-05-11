@@ -1,19 +1,21 @@
 import { Icon, LogoMark } from "./icons/Icons";
 import { T } from "../constants/tokens";
+import logoImage from '../assets/logo.png';
 
 export default function Navbar({ page, setPage }) {
   return (
     <nav className="nav">
       {/* LOGO */}
-      <div className="nav-logo" onClick={() => setPage("home")}>
-        <div className="nav-logo-mark">
-          <LogoMark />
-        </div>
-        <div>
-          <div className="nav-logo-name">InnoTech</div>
-          <div className="nav-logo-sub">langkah seribu proses</div>
-        </div>
+      <div className="nav-logo" onClick={() => setPage("home")} style={{ cursor: 'pointer' }}>
+      <div className="nav-logo-mark">
+        {/* 2. Ganti <LogoMark /> dengan tag img */}
+        <img 
+          src={logoImage} 
+          alt="InnoTech Logo" 
+          className="logo-img-element"
+        />
       </div>
+    </div>
 
       {/* LINKS */}
       <div className="nav-links">
