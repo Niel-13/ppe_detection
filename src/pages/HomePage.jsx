@@ -16,9 +16,7 @@ export default function HomePage({ setPage }) {
           <div className="hero-left">
             <h1>Deteksi APD <em>Otomatis</em> Berbasis AI</h1>
             <p className="hero-sub">
-              Monitor pemakaian helm dan rompi keselamatan pekerja secara langsung
-              dari kamera menggunakan model YOLOv8 ONNX, ringan, cepat,
-              dan berjalan sepenuhnya di server lokal Anda.
+              Pantau penggunaan helm dan rompi keselamatan pekerja secara langsung melalui kamera dengan deteksi AI yang cepat dan responsif.
             </p>
             <div className="hero-actions">
               <button className="btn-primary" onClick={() => setPage("detection")}>
