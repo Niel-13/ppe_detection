@@ -36,7 +36,7 @@ export default function HomePage({ setPage }) {
           {[
             { icon: <Icon.HardHat s={20} c={T.accent} />, bg: "rgba(45,125,210,.1)",  title: "Deteksi Helm",        desc: "Identifikasi safety helmet secara otomatis dari kamera" },
             { icon: <Icon.Shield  s={20} c={T.gold}   />, bg: "rgba(240,180,41,.12)", title: "Deteksi Rompi",       desc: "Kenali safety vest di setiap frame secara real-time" },
-            { icon: <Icon.Video   s={20} c={T.teal}   />, bg: "rgba(8,145,178,.1)",   title: "Streaming Kamera",    desc: "Koneksi langsung via WebRTC + WebSocket lokal" },
+            { icon: <Icon.Video   s={20} c={T.teal}   />, bg: "rgba(8,145,178,.1)",   title: "Streaming Kamera",    desc: "Koneksi langsung via WebRTC + WebSocket" },
           ].map((f) => (
             <div key={f.title} className="feat-item">
               <div className="feat-ic" style={{ background: f.bg }}>{f.icon}</div>
