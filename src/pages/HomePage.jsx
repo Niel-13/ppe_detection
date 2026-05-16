@@ -14,11 +14,7 @@ export default function HomePage({ setPage }) {
 
           {/* Kiri */}
           <div className="hero-left">
-            <div className="hero-badge">
-              <span className="hero-badge-dot" />
-              Computer Vision · Keselamatan Kerja
-            </div>
-            <h1>Deteksi APD <em>Otomatis</em><br/>Berbasis AI</h1>
+            <h1>Deteksi APD <em>Otomatis</em> Berbasis AI</h1>
             <p className="hero-sub">
               Monitor pemakaian helm dan rompi keselamatan pekerja secara langsung
               dari kamera menggunakan model YOLOv8 ONNX, ringan, cepat,
@@ -31,24 +27,6 @@ export default function HomePage({ setPage }) {
               <button className="btn-ghost" onClick={() => setPage("about")}>
                 Pelajari Cara Kerja
               </button>
-            </div>
-          </div>
-
-          {/* Kanan, stat cards */}
-          <div className="hero-right">
-            <div className="hero-stats">
-              {[
-                { icon: <Icon.HardHat  s={20} c="#7dc4f7" />, num: "4",       lbl: "Kelas Deteksi",     cls: "" },
-                { icon: <Icon.Activity s={20} c={T.gold}  />, num: "~200ms",  lbl: "Latensi per Frame", cls: "gold" },
-                { icon: <Icon.Cpu      s={20} c="#7dc4f7" />, num: "ONNX",    lbl: "Format Model",      cls: "" },
-                { icon: <Icon.Shield   s={20} c={T.gold}  />, num: "Lokal",   lbl: "Berjalan di Server", cls: "gold" },
-              ].map((s, i) => (
-                <div key={i} className={`h-stat ${s.cls}`}>
-                  {s.icon}
-                  <div className="h-stat-num">{s.num}</div>
-                  <div className="h-stat-lbl">{s.lbl}</div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

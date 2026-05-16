@@ -6,11 +6,17 @@ import { T } from "../constants/tokens";
 /* ═══════════════════════════════════════════════════════════
    KONSTANTA
 ═══════════════════════════════════════════════════════════ */
-// Auto-detect backend URL agar WebSocket tetap berjalan
-// baik di localhost maupun saat deploy HTTPS.
-const API_HOST = `${window.location.protocol}//${window.location.hostname}:8000`;
-const WS_PROTO = window.location.protocol === "https:" ? "wss:" : "ws:";
-const WS_URL = `${WS_PROTO}//${window.location.hostname}:8000/ws/detect`;
+// Endpoint backend diambil dari environment variable deployment.
+// Untuk Vercel/Netlify, isi:
+// REACT_APP_API_BASE_URL=https://domain-backend-kamu
+// REACT_APP_WS_BASE_URL=wss://domain-backend-kamu
+const trimTrailingSlash = (url = "") => url.replace(/\/+$/, "");
+const API_HOST = trimTrailingSlash(process.env.REACT_APP_API_BASE_URL || window.location.origin);
+const WS_HOST = trimTrailingSlash(
+  process.env.REACT_APP_WS_BASE_URL ||
+  `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
+);
+const WS_URL = `${WS_HOST}/ws/detect`;
 const UPLOAD_URL = `${API_HOST}/api/detect/image`;
 const FRAME_RATE  = 200; // ms antar frame (5 FPS)
 const BEEP_CD     = 4000; // cooldown beep (ms)
@@ -99,9 +105,9 @@ function getCamError(err) {
       return "Kamera digunakan aplikasi lain (Zoom, Meet, dll). Tutup dulu, lalu coba lagi.";
     case "SecurityError":
     case "TypeError":
-      return "Akses kamera diblokir browser.\n\nPastikan:\n• Buka via http://localhost:3000 (bukan IP atau domain lain)\n• Atau gunakan HTTPS jika deploy ke server";
+      return "Akses kamera diblokir browser.\n\nPastikan aplikasi dibuka melalui domain HTTPS resmi agar browser mengizinkan akses kamera.";
     default:
-      return `Gagal akses kamera: ${err.message}\n\nPastikan buka via localhost:3000 atau HTTPS.`;
+      return `Gagal akses kamera: ${err.message}\n\nPastikan aplikasi berjalan melalui domain HTTPS dan izin kamera sudah diberikan.`;
   }
 }
 
@@ -775,7 +781,7 @@ export default function DetectionPage({ setPage }) {
 
     // Cek support
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCamError("Akses kamera tidak didukung.\nBuka via http://localhost:3000 atau gunakan HTTPS.");
+      setCamError("Akses kamera tidak didukung.\nGunakan browser terbaru dan buka aplikasi melalui domain HTTPS.");
       return;
     }
 
@@ -805,25 +811,6 @@ export default function DetectionPage({ setPage }) {
       setCamError(getCamError(err));
     }
   }, [camOn, camIdx, mediaStream]);
-
-  /* ── Ganti kamera ── */
-  const switchCamera = useCallback(async () => {
-    const next = (camIdx + 1) % Math.max(cameras.length, 1);
-    setCamIdx(next);
-    if (!camOn || cameras.length < 2) return;
-    mediaStream?.getTracks().forEach(t => t.stop());
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: cameras[next] ? { deviceId:{ exact:cameras[next].deviceId } } : true,
-        audio: false,
-      });
-      setMediaStream(stream);
-    } catch (err) {
-      setCamError(getCamError(err));
-      setCamOn(false);
-      setMediaStream(null);
-    }
-  }, [camOn, camIdx, cameras, mediaStream]);
 
   /* ── Cleanup unmount ── */
   useEffect(() => {
@@ -873,7 +860,6 @@ export default function DetectionPage({ setPage }) {
     }
   };
 
-  const camLabel = cameras[camIdx]?.label?.replace(/\s*\(.*?\)/g,"").trim() || `Kamera ${camIdx+1}`;
 
   const wsPillClass = wsStatus === "on"    ? "on"
                     : wsStatus === "error" ? "err"
@@ -881,7 +867,7 @@ export default function DetectionPage({ setPage }) {
 
   const wsPillText = wsStatus === "on"         ? "WebSocket Terhubung, Mengirim frame ke model"
                    : wsStatus === "connecting"  ? "Menghubungkan ke backend..."
-                   : wsStatus === "error"       ? "Gagal terhubung ke backend (pastikan server berjalan)"
+                   : wsStatus === "error"       ? "Gagal terhubung ke backend. Periksa URL backend dan status server"
                    : "WebSocket Tidak Aktif";
 
   return (
@@ -1005,18 +991,15 @@ export default function DetectionPage({ setPage }) {
               <div style={{ flex:1 }}>
                 <div className="r-title">Gagal Mengakses Kamera</div>
                 <div className="r-sub" style={{ whiteSpace:"pre-line" }}>{camError}</div>
-                {/* Panduan cepat jika bukan localhost */}
-                {(window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") && (
-                  <div style={{
-                    marginTop:10, padding:"10px 14px", borderRadius:8,
-                    background:"rgba(220,38,38,.07)", border:"1px solid rgba(220,38,38,.15)",
-                    fontSize:12, color:"#64748b", lineHeight:1.7,
-                  }}>
-                    <strong style={{ color:"#dc2626" }}>⚠ URL saat ini bukan localhost</strong><br/>
-                    Buka aplikasi di: <code style={{ background:"rgba(0,0,0,.06)", padding:"1px 5px", borderRadius:4 }}>http://localhost:3000</code><br/>
-                    Atau jalankan: <code style={{ background:"rgba(0,0,0,.06)", padding:"1px 5px", borderRadius:4 }}>npm start</code> di folder project
-                  </div>
-                )}
+                <div style={{
+                  marginTop:10, padding:"10px 14px", borderRadius:8,
+                  background:"rgba(220,38,38,.07)", border:"1px solid rgba(220,38,38,.15)",
+                  fontSize:12, color:"#64748b", lineHeight:1.7,
+                }}>
+                  <strong style={{ color:"#dc2626" }}>⚠ Akses kamera membutuhkan HTTPS</strong><br/>
+                  Pastikan aplikasi dibuka melalui domain deploy yang sudah memakai SSL/HTTPS.<br/>
+                  Jika masih gagal, cek izin kamera pada browser lalu refresh halaman.
+                </div>
               </div>
             </div>
           )}
@@ -1053,7 +1036,7 @@ export default function DetectionPage({ setPage }) {
               <div className="r-alert-ic"><Icon.Loader s={16} c={T.muted}/></div>
               <div>
                 <div className="r-title">Menghubungkan ke model...</div>
-                <div className="r-sub">Pastikan backend FastAPI berjalan di localhost:8000</div>
+                <div className="r-sub">Sistem sedang menghubungkan kamera ke backend deteksi. Periksa konfigurasi endpoint bila status tidak berubah.</div>
               </div>
             </div>
           ) : null}

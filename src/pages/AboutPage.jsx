@@ -76,23 +76,6 @@ const CLASSES = [
 ];
 
 /* ─────────────────────────────────────
-   TECH PILL
-───────────────────────────────────── */
-function TechPill({ name, version, color, bg }) {
-  return (
-    <div style={{
-      display:"inline-flex", alignItems:"center", gap:8,
-      padding:"7px 14px", borderRadius:99,
-      background:bg, border:`1px solid ${color}30`,
-    }}>
-      <div style={{ width:7, height:7, borderRadius:"50%", background:color, boxShadow:`0 0 6px ${color}` }}/>
-      <span style={{ fontSize:13, fontWeight:700, color:T.navy }}>{name}</span>
-      {version && <span style={{ fontSize:11, color:T.muted }}>{version}</span>}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────
    MAIN
 ───────────────────────────────────── */
 export default function AboutPage({ setPage }) {
@@ -330,7 +313,7 @@ export default function AboutPage({ setPage }) {
 
             <div style={{ flex:"2 1 320px" }}>
               <TimelineStep num={1} color={T.accent}  icon={<Icon.Video   s={18} c={T.accent}/>}  title="Ambil Frame Kamera"       sub="Browser mengakses kamera via getUserMedia() dan mengambil frame setiap 200ms menggunakan Canvas API." />
-              <TimelineStep num={2} color="#9333ea"   icon={<Icon.Wifi    s={18} c="#9333ea"/>}   title="Kirim via WebSocket"       sub="Frame dikompresi ke JPEG base64 (kualitas 75%) dan dikirim ke endpoint ws://localhost:8000/ws/detect." />
+              <TimelineStep num={2} color="#9333ea"   icon={<Icon.Wifi    s={18} c="#9333ea"/>}   title="Kirim via WebSocket"       sub="Frame dikompresi ke JPEG base64 (kualitas 75%) dan dikirim ke endpoint WebSocket backend aktif melalui koneksi WSS saat deploy." />
               <TimelineStep num={3} color={T.gold}    icon={<Icon.Cpu     s={18} c={T.gold}/>}    title="Inferensi YOLOv8 ONNX"    sub="Backend FastAPI mendecode frame, menjalankan model ONNX (input 640×640), dan memproses output [1,8,8400]." />
               <TimelineStep num={4} color="#22c55e"   icon={<Icon.Layers  s={18} c="#22c55e"/>}   title="NMS & Postprocessing"      sub="Non-Maximum Suppression menyaring deteksi duplikat. Koordinat dikonversi ke bbox_norm (0–1) relatif gambar." last />
             </div>
@@ -392,7 +375,7 @@ export default function AboutPage({ setPage }) {
             background:"rgba(0,0,0,.3)", border:"1px solid rgba(255,255,255,.08)",
             fontFamily:"monospace", fontSize:12, color:"rgba(255,255,255,.7)", lineHeight:1.9,
           }}>
-            <div style={{ color:"rgba(255,255,255,.3)", marginBottom:8, fontSize:11, letterSpacing:".5px" }}>// Contoh JSON Response WebSocket</div>
+            <div style={{ color:"rgba(255,255,255,.3)", marginBottom:8, fontSize:11, letterSpacing:".5px" }}>{"// Contoh JSON Response WebSocket"}</div>
             <div><span style={{ color:"#93c5fd" }}>"status"</span><span style={{ color:"rgba(255,255,255,.4)" }}>: </span><span style={{ color:"#86efac" }}>"violation"</span>,</div>
             <div><span style={{ color:"#93c5fd" }}>"total_detected"</span><span style={{ color:"rgba(255,255,255,.4)" }}>: </span><span style={{ color:"#fcd34d" }}>2</span>,</div>
             <div><span style={{ color:"#93c5fd" }}>"violation_count"</span><span style={{ color:"rgba(255,255,255,.4)" }}>: </span><span style={{ color:"#fca5a5" }}>1</span>,</div>

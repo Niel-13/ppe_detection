@@ -1,5 +1,3 @@
-import { Icon, LogoMark } from "./icons/Icons";
-import { T } from "../constants/tokens";
 import logoImage from '../assets/logo.png';
 
 export default function Navbar({ page, setPage }) {
