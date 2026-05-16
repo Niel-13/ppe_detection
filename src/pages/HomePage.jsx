@@ -20,7 +20,7 @@ export default function HomePage({ setPage }) {
             </p>
             <div className="hero-actions">
               <button className="btn-primary" onClick={() => setPage("detection")}>
-                <Icon.Video s={15} c={T.navy} /> Mulai Deteksi
+                Mulai Deteksi
               </button>
               <button className="btn-ghost" onClick={() => setPage("about")}>
                 Pelajari Cara Kerja
@@ -53,7 +53,6 @@ export default function HomePage({ setPage }) {
       <section className="sec" style={{ background: T.white }}>
         <div className="sec-inner">
           <div className="sec-hdr">
-            <div className="sec-tag"><Icon.BookOpen s={12} c={T.accent} /> Pengenalan</div>
             <h2 className="sec-title">Apa itu APD?</h2>
             <p className="sec-sub" style={{ maxWidth: 500 }}>
               Alat Pelindung Diri (APD) adalah perlengkapan wajib di area kerja
@@ -122,7 +121,6 @@ export default function HomePage({ setPage }) {
       <section className="sec">
         <div className="sec-inner">
           <div className="sec-hdr tc">
-            <div className="sec-tag"><Icon.Settings s={12} c={T.accent} /> Cara Kerja</div>
             <h2 className="sec-title">Dari Kamera ke Hasil Deteksi</h2>
             <p className="sec-sub" style={{ maxWidth: 480, margin: "10px auto 0" }}>
               Tiga tahap yang terjadi dalam hitungan milidetik, sepenuhnya otomatis

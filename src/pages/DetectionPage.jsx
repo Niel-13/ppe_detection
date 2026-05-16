@@ -203,7 +203,7 @@ function BboxOverlay({ detections, videoRef }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FULLSCREEN, data nyata, tanpa dummy
+   FULLSCREEN
 ═══════════════════════════════════════════════════════════ */
 function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, camIdx, onSwitchCamera }) {
   const fsRef      = useRef(null);
@@ -1036,7 +1036,7 @@ export default function DetectionPage({ setPage }) {
               <div className="r-alert-ic"><Icon.Loader s={16} c={T.muted}/></div>
               <div>
                 <div className="r-title">Menghubungkan ke model...</div>
-                <div className="r-sub">Sistem sedang menghubungkan kamera ke backend deteksi. Periksa konfigurasi endpoint bila status tidak berubah.</div>
+                <div className="r-sub">Sistem sedang menghubungkan kamera ke backend deteksi</div>
               </div>
             </div>
           ) : null}
@@ -1050,7 +1050,7 @@ export default function DetectionPage({ setPage }) {
             </div>
             <div>
               <div className="det-card-title">Deteksi dengan Gambar</div>
-              <div className="det-card-sub">Upload foto area kerja → analisis langsung via POST /api/detect/image</div>
+              <div className="det-card-sub">Unggah foto area kerja untuk langsung menganalisis penggunaan alat pelindung diri pekerja.</div>
             </div>
           </div>
 
@@ -1087,7 +1087,7 @@ export default function DetectionPage({ setPage }) {
                   <div className="r-alert-ic"><Icon.Loader s={16} c={T.muted}/></div>
                   <div>
                     <div className="r-title">Mengirim ke model...</div>
-                    <div className="r-sub">YOLOv8 sedang menganalisis gambar</div>
+                    <div className="r-sub">sedang menganalisis gambar</div>
                   </div>
                 </div>
               ) : imgRes?.status === "error" ? (

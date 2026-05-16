@@ -112,17 +112,6 @@ export default function AboutPage({ setPage }) {
         }}/>
 
         <div style={{ position:"relative", zIndex:1, maxWidth:720, margin:"0 auto", textAlign:"center" }}>
-          {/* badge */}
-          <div style={{
-            display:"inline-flex", alignItems:"center", gap:8, marginBottom:24,
-            background:"rgba(45,125,210,.18)", border:"1px solid rgba(45,125,210,.35)",
-            color:"#7dc4f7", fontSize:11, fontWeight:700, letterSpacing:"1px",
-            textTransform:"uppercase", padding:"6px 16px", borderRadius:99,
-          }}>
-            <div style={{ width:6, height:6, borderRadius:"50%", background:"#7dc4f7", animation:"ppe-pulse 2s infinite" }}/>
-            Tentang Sistem
-          </div>
-
           <h1 style={{
             fontSize:"clamp(32px,5vw,52px)", fontWeight:800, color:"#fff",
             letterSpacing:"-1.5px", lineHeight:1.1, marginBottom:18,
@@ -432,14 +421,6 @@ export default function AboutPage({ setPage }) {
             backgroundSize:"22px 22px",
           }}/>
           <div style={{ position:"relative", zIndex:1 }}>
-            <div style={{
-              display:"inline-flex", alignItems:"center", gap:8, marginBottom:18,
-              background:"rgba(240,180,41,.15)", border:"1px solid rgba(240,180,41,.3)",
-              color:T.gold, fontSize:11, fontWeight:700, letterSpacing:"1px",
-              textTransform:"uppercase", padding:"6px 14px", borderRadius:99,
-            }}>
-              Siap Digunakan
-            </div>
             <h2 style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-.6px", marginBottom:12 }}>
               Mulai Deteksi Sekarang
             </h2>
@@ -459,7 +440,7 @@ export default function AboutPage({ setPage }) {
                   transition:"all .2s",
                 }}
               >
-                <Icon.Video s={15} c={T.navy}/> Buka Deteksi
+                Buka Deteksi
               </button>
               <button
                 onClick={() => setPage("home")}
