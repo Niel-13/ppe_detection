@@ -504,7 +504,7 @@ function ResultCards({ stats, detections }) {
             display:"flex", flexDirection:"column", gap:4,
           }}>
             <div style={{ fontSize:10, color:"#64748b", fontWeight:600, letterSpacing:".5px", textTransform:"uppercase" }}>Terdeteksi</div>
-            <div style={{ fontSize:28, fontWeight:800, color:"#e2e8f0", lineHeight:1 }}>{stats.total_detected}</div>
+            <div style={{ fontSize:28, fontWeight:800, color:"#393939", lineHeight:1 }}>{stats.total_detected}</div>
             <div style={{ fontSize:11, color:"#475569" }}>orang</div>
           </div>
 
