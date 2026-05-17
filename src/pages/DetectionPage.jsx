@@ -356,7 +356,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
         <div className="fs-stats">
           <div className="fs-big">
             <div className="fs-lbl">Total Terdeteksi</div>
-            <div className="fs-val" style={{ color: violations > 0 ? "#f87171" : "#fff" }}>{total}</div>
+            <div className="fs-val" style={{ color: violations > 0 ? "#f87171" : "#393939" }}>{total}</div>
             <div className="fs-sub">Orang</div>
           </div>
           <div className="fs-sm">
@@ -564,7 +564,7 @@ function ResultCards({ stats, detections }) {
             Detail Deteksi
           </div>
           {detections.map((d, i) => {
-            const color  = CLASS_COLOR[d.label] || "#64748b";
+            const color  = CLASS_COLOR[d.label] || "#393939";
             const isVio  = d.label !== "complete_vest_helmet";
             const conf_d = (d.confidence * 100);
             return (
