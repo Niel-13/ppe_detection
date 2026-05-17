@@ -356,7 +356,7 @@ function FullScreen({ onClose, stream, detections, stats, inferenceMs, cameras, 
         <div className="fs-stats">
           <div className="fs-big">
             <div className="fs-lbl">Total Terdeteksi</div>
-            <div className="fs-val" style={{ color: violations > 0 ? "#f87171" : "#393939" }}>{total}</div>
+            <div className="fs-val" style={{ color: violations > 0 ? "#f87171" : "#1e1e1e" }}>{total}</div>
             <div className="fs-sub">Orang</div>
           </div>
           <div className="fs-sm">
@@ -588,7 +588,7 @@ function ResultCards({ stats, detections }) {
 
                 {/* Label */}
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#cbd5e1" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#393939" }}>
                     {CLASS_LABEL[d.label] || d.label}
                   </div>
                   <div style={{ fontSize:10, color:"#475569", marginTop:1 }}>
