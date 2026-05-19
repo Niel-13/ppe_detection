@@ -296,7 +296,7 @@ export default function AboutPage({ setPage }) {
                 Bagaimana cara<br/>kerjanya?
               </h2>
               <p style={{ fontSize:14, color:T.muted, lineHeight:1.8 }}>
-                Dari kamera hingga hasil deteksi, semuanya terjadi dalam hitungan milidetik menggunakan pipeline WebRTC → WebSocket → ONNX.
+                Dari kamera hingga hasil deteksi, semuanya terjadi dalam hitungan milidetik menggunakan pipeline Camera API → Canvas API → WebSocket → ONNX.
               </p>
             </div>
 
@@ -325,7 +325,7 @@ export default function AboutPage({ setPage }) {
           {/* Flow */}
           <div style={{ display:"flex", alignItems:"center", gap:0, overflowX:"auto", paddingBottom:8 }}>
             {[
-              { label:"Browser",     detail:"WebRTC Camera",    circle:"linear-gradient(135deg,#2d7dd2,#0891b2)", icon:<Icon.Video   s={16} c="#fff"/> },
+              { label:"Browser",     detail:"Camera API",    circle:"linear-gradient(135deg,#2d7dd2,#0891b2)", icon:<Icon.Video   s={16} c="#fff"/> },
               null,
               { label:"Canvas API",  detail:"Frame → JPEG",     circle:"rgba(255,255,255,.1)",                    icon:<Icon.Code    s={16} c="rgba(255,255,255,.7)"/> },
               null,
@@ -384,7 +384,7 @@ export default function AboutPage({ setPage }) {
 
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:16 }}>
             {[
-              { name:"React 19",    role:"Frontend SPA + WebRTC",          color:"#61dafb", bg:"rgba(97,218,251,.08)",  icon:<Icon.Code  s={22} c="#61dafb"/> },
+              { name:"React 19",    role:"Frontend SPA + Camera API",          color:"#61dafb", bg:"rgba(97,218,251,.08)",  icon:<Icon.Code  s={22} c="#61dafb"/> },
               { name:"FastAPI",     role:"Backend REST + WebSocket",        color:"#f97316", bg:"rgba(249,115,22,.08)", icon:<Icon.Zap   s={22} c="#f97316"/> },
               { name:"YOLOv8 ONNX", role:"Object Detection Model",          color:"#9333ea", bg:"rgba(147,51,234,.08)", icon:<Icon.Cpu   s={22} c="#9333ea"/> },
               { name:"WebSocket",   role:"Real-time bidireksional",         color:T.teal,   bg:"rgba(8,145,178,.08)",  icon:<Icon.Wifi  s={22} c={T.teal}/> },

@@ -919,7 +919,7 @@ export default function DetectionPage({ setPage }) {
             </div>
             <div>
               <div className="det-card-title">Deteksi Kamera Real-time</div>
-              <div className="det-card-sub">WebRTC → WebSocket → YOLOv8 ONNX → hasil langsung</div>
+              <div className="det-card-sub">Camera API → WebSocket → YOLOv8 ONNX → hasil langsung</div>
             </div>
           </div>
 
